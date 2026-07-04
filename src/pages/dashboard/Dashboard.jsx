@@ -103,7 +103,8 @@ function CustomTooltip({ active, payload, label, currency }) {
 }
 
 /* ── Build monthly revenue data from payments ── */
-function buildMonthlyRevenue(payments = []) {
+function buildMonthlyRevenue(payments) {
+  const safePayments = Array.isArray(payments) ? payments : []
   const MONTHS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc']
   const now    = new Date()
   const result = []
@@ -112,7 +113,7 @@ function buildMonthlyRevenue(payments = []) {
     const d     = new Date(now.getFullYear(), now.getMonth() - i, 1)
     const key   = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
     const label = MONTHS[d.getMonth()]
-    const total = payments
+    const total = safePayments
       .filter(p => p.status === 'PAID' && (p.date ?? p.createdAt ?? '').startsWith(key))
       .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
     result.push({ month: label, revenus: total, objectif: 4000000 })
@@ -121,7 +122,8 @@ function buildMonthlyRevenue(payments = []) {
 }
 
 /* ── Build payment status pie data ── */
-function buildPaymentPie(payments = []) {
+function buildPaymentPie(payments) {
+  payments = Array.isArray(payments) ? payments : []
   const counts = { PAID: 0, PARTIAL: 0, OVERDUE: 0 }
   payments.forEach(p => {
     const k = p.status === 'PENDING' ? 'PARTIAL' : (p.status ?? 'PARTIAL')
@@ -135,7 +137,8 @@ function buildPaymentPie(payments = []) {
 }
 
 /* ── Build average grades per class ── */
-function buildGradesByClass(grades = []) {
+function buildGradesByClass(grades) {
+  grades = Array.isArray(grades) ? grades : []
   const map = {}
   grades.forEach(s => {
     const cls = s.classLevel ?? s.class ?? 'N/A'
@@ -152,8 +155,10 @@ function buildGradesByClass(grades = []) {
 /* ════════════════════ DASHBOARD SCREEN ════════════════════ */
 function DashScreen() {
   const { data: dash, isLoading: dashLoading, error: dashError, refetch: refetchDash } = useDashboard()
-  const { data: payments = [], isLoading: payLoading }  = usePayments()
-  const { data: grades   = [], isLoading: gradeLoading } = useGrades()
+  const { data: paymentsRaw, isLoading: payLoading } = usePayments()
+  const payments = Array.isArray(paymentsRaw) ? paymentsRaw : (paymentsRaw?.content ?? paymentsRaw?.data ?? [])
+  const { data: gradesRaw, isLoading: gradeLoading } = useGrades(null)
+  const grades = Array.isArray(gradesRaw) ? gradesRaw : (gradesRaw?.content ?? gradesRaw?.data ?? [])
 
   const isLoading = dashLoading || payLoading || gradeLoading
 
@@ -419,7 +424,8 @@ function DashScreen() {
 
 /* ════════════════════ STUDENTS SCREEN ════════════════════ */
 function StudentsScreen() {
-  const { data: students = [], isLoading, error, refetch } = useStudents()
+  const { data: studentsRaw, isLoading, error, refetch } = useStudents()
+  const students = Array.isArray(studentsRaw) ? studentsRaw : (studentsRaw?.content ?? studentsRaw?.data ?? [])
   const [search, setSearch] = useState('')
 
   const getName = (s) => `${s.firstName ?? ''} ${s.lastName ?? ''}`.trim() || s.fullName || '—'
@@ -496,7 +502,8 @@ function StudentsScreen() {
 
 /* ════════════════════ PAYMENTS SCREEN ════════════════════ */
 function PaymentsScreen() {
-  const { data: payments = [], isLoading, error, refetch } = usePayments()
+  const { data: paymentsRaw2, isLoading, error, refetch } = usePayments()
+  const payments = Array.isArray(paymentsRaw2) ? paymentsRaw2 : (paymentsRaw2?.content ?? paymentsRaw2?.data ?? [])
 
   if (isLoading) return <LoadingSpinner />
   if (error) return <ApiErrorFallback error={error} onRetry={refetch} section="Paiements" />
