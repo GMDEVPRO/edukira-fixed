@@ -2,7 +2,7 @@
  * React Query hooks — 100% aligned with backend endpoints.
  * Cada hook mapeia exactamente o controller e DTO correspondente.
  */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getDashboard,
   getStudents, addStudent, updateStudent, deleteStudent,
@@ -19,7 +19,7 @@ import toast from 'react-hot-toast'
 
 /* ─── Query keys ─── */
 export const QK = {
-  dashboard:      () => ['dashboard'],
+  dashboard:      (schoolId) => ['dashboard', schoolId ?? 'default'],
   students:       () => ['students'],
   student:        (id) => ['student', id],
   grades:         (cls) => ['grades', cls],
@@ -38,10 +38,11 @@ export const QK = {
 }
 
 /* ════════ DASHBOARD ════════ */
-export function useDashboard() {
+export function useDashboard(schoolId) {
   return useQuery({
-    queryKey: QK.dashboard(),
-    queryFn:  getDashboard,
+    queryKey: QK.dashboard(schoolId),
+    queryFn:  () => getDashboard(schoolId),
+    enabled:  !!schoolId,
     staleTime: 60_000,
     retry: 2,
   })
@@ -99,6 +100,20 @@ export function useGrades(classLevel) {
     queryKey: QK.grades(classLevel),
     queryFn:  () => getGradesByClass(classLevel),
     enabled:  !!classLevel,
+  })
+}
+
+export function useGradesForClasses(classLevels = [], periods = ['BIMESTRE_1','BIMESTRE_2','BIMESTRE_3'], year) {
+  const combos = []
+  classLevels.forEach(cls => periods.forEach(period => combos.push({ cls, period })))
+
+  return useQueries({
+    queries: combos.map(({ cls, period }) => ({
+      queryKey: ['grades', cls, period, year ?? 'default'],
+      queryFn:  () => getGradesByClass(cls, period, year),
+      enabled:  !!cls && !!period,
+      staleTime: 30_000,
+    })),
   })
 }
 

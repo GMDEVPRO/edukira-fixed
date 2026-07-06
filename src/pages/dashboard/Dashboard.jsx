@@ -7,9 +7,19 @@ import {
   ResponsiveContainer, Legend,
 } from 'recharts'
 import useAuthStore from '../../store/authStore'
-import { useDashboard, useStudents, usePayments, useGrades } from '../../hooks/useSchoolData'
+import { useDashboard, useStudents, usePayments, useGradesForClasses } from '../../hooks/useSchoolData'
 import { ErrorBoundary } from '../../components/error/ErrorBoundary'
 import ApiErrorFallback from '../../components/error/ApiErrorFallback'
+
+/* ── Normaliza respostas da API (array puro, paginação Spring ou wrapper) ── */
+function toArray(data) {
+  if (Array.isArray(data)) return data
+  if (data && Array.isArray(data.content)) return data.content
+  if (data && Array.isArray(data.data)) return data.data
+  if (data && data.data && Array.isArray(data.data.content)) return data.data.content
+  return []
+}
+
 
 /* ── Design tokens ── */
 const C = {
@@ -18,6 +28,7 @@ const C = {
 }
 const GREENS  = ['#1D9E75','#2ECC9E','#4DD9B8','#7EEBD0','#A8F2E4']
 const STATUS_COLORS = { PAID:'#1D9E75', PARTIAL:'#D97706', PENDING:'#D97706', OVERDUE:'#DC2626' }
+const GRADE_PERIODS = ['BIMESTRE_1', 'BIMESTRE_2', 'BIMESTRE_3']
 
 /* ── Sidebar nav ── */
 const NAV = [
@@ -101,6 +112,7 @@ function CustomTooltip({ active, payload, label, currency }) {
     </div>
   )
 }
+/* ── Busca notas de várias turmas, em todos os bimestres, em paralelo ── */
 
 /* ── Build monthly revenue data from payments ── */
 function buildMonthlyRevenue(payments) {
@@ -114,7 +126,7 @@ function buildMonthlyRevenue(payments) {
     const key   = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
     const label = MONTHS[d.getMonth()]
     const total = safePayments
-      .filter(p => p.status === 'PAID' && (p.date ?? p.createdAt ?? '').startsWith(key))
+      .filter(p => p.status === 'PAID' && (p.month ?? '').startsWith(key))
       .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
     result.push({ month: label, revenus: total, objectif: 4000000 })
   }
@@ -136,15 +148,18 @@ function buildPaymentPie(payments) {
   ].filter(d => d.value > 0)
 }
 
-/* ── Build average grades per class ── */
+/* ── Build average grades per class ──
+   Aceita registros vindos de várias turmas, com nomes de campo flexíveis
+   (notes | grades | scores) e valores em value | score | note | número puro. */
 function buildGradesByClass(grades) {
   grades = Array.isArray(grades) ? grades : []
   const map = {}
-  grades.forEach(s => {
-    const cls = s.classLevel ?? s.class ?? 'N/A'
-    const vals = (s.notes ?? []).map(n => parseFloat(n.value)).filter(v => !isNaN(v))
+  grades.forEach(g => {
+    const cls = g.classLevel ?? 'N/A'
+    const val = parseFloat(g.average ?? g.grade1 ?? g.grade2)
+    if (isNaN(val)) return
     if (!map[cls]) map[cls] = []
-    map[cls].push(...vals)
+    map[cls].push(val)
   })
   return Object.entries(map).map(([cls, vals]) => ({
     classe: cls,
@@ -152,13 +167,39 @@ function buildGradesByClass(grades) {
   })).sort((a,b) => b.moyenne - a.moyenne).slice(0, 6)
 }
 
+
 /* ════════════════════ DASHBOARD SCREEN ════════════════════ */
 function DashScreen() {
-  const { data: dash, isLoading: dashLoading, error: dashError, refetch: refetchDash } = useDashboard()
+  const { school } = useAuthStore()
+  const schoolId = school?.id ?? school?.schoolId
+  const { data: dash, isLoading: dashLoading, error: dashError, refetch: refetchDash } = useDashboard(schoolId)
+
   const { data: paymentsRaw, isLoading: payLoading } = usePayments()
-  const payments = Array.isArray(paymentsRaw) ? paymentsRaw : (paymentsRaw?.content ?? paymentsRaw?.data ?? [])
-  const { data: gradesRaw, isLoading: gradeLoading } = useGrades(null)
-  const grades = Array.isArray(gradesRaw) ? gradesRaw : (gradesRaw?.content ?? gradesRaw?.data ?? [])
+  const payments = toArray(paymentsRaw)
+
+  /* ── Notas: buscamos por turma, já que a API só aceita uma turma por vez.
+     As turmas são derivadas da lista de alunos (classLevel/class). ── */
+  const { data: studentsRawForGrades } = useStudents()
+  const studentsForGrades = toArray(studentsRawForGrades)
+
+  const classLevels = useMemo(() => {
+  const set = new Set(
+    studentsForGrades.map(s => s.classLevel ?? s.class).filter(Boolean)
+  )
+  return Array.from(set)
+}, [studentsForGrades])
+
+const gradesQueries = useGradesForClasses(classLevels, GRADE_PERIODS)
+const gradeLoading  = gradesQueries.some(q => q.isLoading)
+
+const grades = useMemo(() => {
+  const combos = []
+  classLevels.forEach(cls => GRADE_PERIODS.forEach(() => combos.push(cls)))
+  return gradesQueries.flatMap((q, i) => {
+    const arr = toArray(q.data)
+    return arr.map(g => ({ ...g, classLevel: g.classLevel ?? combos[i] }))
+  })
+}, [gradesQueries, classLevels])
 
   const isLoading = dashLoading || payLoading || gradeLoading
 
@@ -172,7 +213,12 @@ function DashScreen() {
      schoolStats.{ totalStudents, activeStudents, totalClasses, pendingApprovals }
      financialStats.{ monthlyRevenue, overdueAmount, overdueCount, collectionRate }
      academicStats.{ averageGrade, passRate, publishedReports, bestClass }
-     recentActivities[].{ type, description, time }                              */
+     recentActivities[].{ type, description, time }
+
+     NOTA: os KPIs "FCFA ce mois" e "Moy. générale" abaixo vêm direto do
+     backend (financialStats.monthlyRevenue / academicStats.averageGrade).
+     Se continuarem zerados após este fix, o problema está no backend
+     (DashboardController/Service), não neste arquivo.                    */
   const kpis = [
     {
       ico:'👨‍🎓',
@@ -425,7 +471,7 @@ function DashScreen() {
 /* ════════════════════ STUDENTS SCREEN ════════════════════ */
 function StudentsScreen() {
   const { data: studentsRaw, isLoading, error, refetch } = useStudents()
-  const students = Array.isArray(studentsRaw) ? studentsRaw : (studentsRaw?.content ?? studentsRaw?.data ?? [])
+  const students = toArray(studentsRaw)
   const [search, setSearch] = useState('')
 
   const getName = (s) => `${s.firstName ?? ''} ${s.lastName ?? ''}`.trim() || s.fullName || '—'
@@ -503,7 +549,7 @@ function StudentsScreen() {
 /* ════════════════════ PAYMENTS SCREEN ════════════════════ */
 function PaymentsScreen() {
   const { data: paymentsRaw2, isLoading, error, refetch } = usePayments()
-  const payments = Array.isArray(paymentsRaw2) ? paymentsRaw2 : (paymentsRaw2?.content ?? paymentsRaw2?.data ?? [])
+  const payments = toArray(paymentsRaw2)
 
   if (isLoading) return <LoadingSpinner />
   if (error) return <ApiErrorFallback error={error} onRetry={refetch} section="Paiements" />

@@ -72,9 +72,11 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
   },
   server: {
+    port: 5173,
+    strictPort: false,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_URL || 'http://localhost:8080',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },

@@ -114,8 +114,8 @@ export const deleteStudent = (id) =>
   api.delete(`/v1/students/${id}`).then(r => r.data)
 
 /* ── Grades ── */
-export const getGradesByClass = (classLevel) =>
-  api.get(`/v1/grades/class/${classLevel}`).then(r => r.data)
+export const getGradesByClass = (classLevel, period, year) =>
+  api.get(`/v1/grades/class/${classLevel}`, { params: { period, year } }).then(r => r.data)
 export const saveGradesBatch = (data) =>
   api.post('/v1/grades/batch', data).then(r => r.data)
 export const publishGrades = (classLevel) =>
