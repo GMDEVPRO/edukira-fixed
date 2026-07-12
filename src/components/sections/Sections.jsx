@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLang } from '../../hooks/useLang'
 import { useReveal } from '../../hooks/useReveal'
@@ -197,9 +197,8 @@ function PriceCard({ plan, popular }) {
       <h3 className="font-syne font-bold text-[26px] mb-1">{plan.name}</h3>
       <p className="text-[14px] text-[#6B7280] mb-[18px]">{plan.desc}</p>
       <div className="font-syne font-extrabold text-[38px] leading-none mb-6">
-        <span className="text-[20px] align-super mr-1">{plan.price.replace(/\d.*/,'')}</span>
-        {plan.price.replace(/[^0-9]/,'')}
-        <span className="text-[15px] font-normal text-[#6B7280]">{plan.period}</span>
+        {plan.price}
+        <span className="text-[15px] font-normal text-[#6B7280] ml-1">{plan.period}</span>
       </div>
       <ul className="list-none flex-1 space-y-[10px] mb-7">
         {plan.feats.map(f => (
@@ -208,7 +207,7 @@ function PriceCard({ plan, popular }) {
           </li>
         ))}
       </ul>
-      <Link to={`/register?plan=${plan.id}`}
+      <Link to={`/login?plan=${plan.id}`}
         className="w-full flex justify-center items-center px-[30px] py-[14px] bg-[#1D9E75] text-white text-[15px] font-semibold rounded-full hover:bg-[#0F6E56] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(29,158,117,0.32)] transition-all no-underline">
         {plan.name} →
       </Link>

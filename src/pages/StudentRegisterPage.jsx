@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLang } from '../hooks/useLang'
 import api from '../api/axios'
 import useAuthStore from '../store/authStore'
@@ -467,6 +467,7 @@ export default function StudentRegisterPage() {
 }
 
 function LoginMode({ onBack }) {
+  const navigate = useNavigate()
   const [f, setF] = useState({ schoolId:'', documentNumber:'', password:'' })
   const [errs, setErrs] = useState({})
   const [status, setStatus] = useState('idle')
@@ -488,7 +489,7 @@ function LoginMode({ onBack }) {
       if (res.data?.data?.accessToken) {
         /* Store via authStore — not raw localStorage */
         useAuthStore.getState().loginStudent(res.data.data)
-        setStatus('done')
+        navigate('/student/portal')
       } else {
         setErrs({ api: res.data?.message ?? 'Identifiants invalides' })
         setStatus('idle')
@@ -498,8 +499,6 @@ function LoginMode({ onBack }) {
       setStatus('idle')
     }
   }
-
-  if (status === 'done') return <SuccessScreen back={onBack} />
 
   return (
     <div className="p-6 space-y-4">

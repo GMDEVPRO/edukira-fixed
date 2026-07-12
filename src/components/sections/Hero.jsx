@@ -55,7 +55,7 @@ export default function Hero() {
             style={{ animationDelay: '.25s' }}
           >
             <Link
-              to="/register"
+              to="/login"
               className="inline-flex items-center gap-2 px-6 py-[11px] bg-[#1D9E75] text-white text-[14px] font-bold rounded-full hover:bg-[#0F6E56] hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(29,158,117,0.4)] transition-all no-underline"
             >
               {h.cta1}

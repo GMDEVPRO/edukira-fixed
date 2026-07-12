@@ -14,6 +14,8 @@ import {
   getStudentPortalMe, getStudentGrades,
   getStudentPayments, getStudentDocuments,
   getEnrollments, reviewEnrollment,
+  getCountryConfig,
+  getPendingStudentAccounts, reviewStudentAccount,
 } from '../api/axios'
 import toast from 'react-hot-toast'
 
@@ -95,11 +97,11 @@ export function useDeleteStudent() {
 }
 
 /* ════════ GRADES ════════ */
-export function useGrades(classLevel) {
+export function useGrades(classLevel, period, year) {
   return useQuery({
-    queryKey: QK.grades(classLevel),
-    queryFn:  () => getGradesByClass(classLevel),
-    enabled:  !!classLevel,
+    queryKey: [...QK.grades(classLevel), period, year ?? 'default'],
+    queryFn:  () => getGradesByClass(classLevel, period, year),
+    enabled:  !!classLevel && !!period,
   })
 }
 
@@ -182,7 +184,7 @@ export function useAttendance(classLevel, date) {
 export function useSaveAttendance() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ classLevel, body }) => saveAttendance(classLevel, body),
+    mutationFn: saveAttendance,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['attendance'] })
       toast.success('Présences enregistrées ✅')
@@ -223,6 +225,18 @@ export function useNationalRanking(countryCode) {
     queryFn:  () => getNationalRanking(countryCode),
     enabled:  !!countryCode,
     staleTime: 300_000,
+  })
+}
+
+/* ════════ COUNTRY CONFIG ════════
+   Moeda, timezone, ano lectivo, métodos de pagamento suportados — por país.
+   Cache longo (1h) pois esses dados praticamente não mudam. */
+export function useCountryConfig(countryCode) {
+  return useQuery({
+    queryKey: ['country', countryCode],
+    queryFn:  () => getCountryConfig(countryCode),
+    enabled:  !!countryCode,
+    staleTime: 3_600_000,
   })
 }
 
@@ -276,5 +290,26 @@ export function useStudentDocuments() {
     queryKey: QK.portalDocuments(),
     queryFn:  getStudentDocuments,
     staleTime: 120_000,
+  })
+}
+
+/* ════════ STUDENT ACCOUNTS (aprovação de contas criadas por alunos/tutores) ════════ */
+export function usePendingStudentAccounts(page = 0, size = 20) {
+  return useQuery({
+    queryKey: ['studentAccounts', 'pending', page, size],
+    queryFn:  () => getPendingStudentAccounts(page, size),
+    staleTime: 30_000,
+  })
+}
+
+export function useReviewStudentAccount() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...data }) => reviewStudentAccount(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['studentAccounts'] })
+      toast.success('Compte révisé ✅')
+    },
+    onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur révision compte'),
   })
 }

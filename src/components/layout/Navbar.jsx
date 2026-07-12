@@ -82,7 +82,7 @@ export default function Navbar() {
               </button>
             ))}
           </div>
-          <Link to="/register"
+          <Link to="/login"
             className="inline-flex items-center gap-1.5 font-semibold text-white rounded-full no-underline hover:opacity-90 hover:-translate-y-px transition-all"
             style={{ padding:'9px 18px', fontSize:13, background:'#1D9E75', boxShadow:'0 4px 14px rgba(29,158,117,0.32)' }}>
             ✦ {t?.nav?.start || 'Get started'}
@@ -132,7 +132,7 @@ export default function Navbar() {
             </button>
           ))}
           <div style={{ height:1, background:'#E5EDE9', margin:'8px 0' }} />
-          <Link to="/register" onClick={() => setOpen(false)}
+          <Link to="/login" onClick={() => setOpen(false)}
             className="font-bold text-white rounded-full no-underline text-center hover:opacity-90 active:scale-95 transition-all"
             style={{ display:'block', padding:14, fontSize:14, background:'#1D9E75', boxShadow:'0 6px 20px rgba(29,158,117,0.38)' }}>
             ✦ {t?.nav?.start || 'Get started'}

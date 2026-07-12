@@ -1,11 +1,14 @@
 ﻿import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import api from '../../api/axios'
 import useAuthStore from '../../store/authStore'
 
 export default function Login() {
   const navigate = useNavigate()
   const login = useAuthStore((s) => s.login)
+  const [searchParams] = useSearchParams()
+  const plan = searchParams.get('plan')
+  const registerHref = plan ? `/register?plan=${plan}` : '/register'
   const [form, setForm] = useState({ email:'', password:'', schoolId:'' })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -122,7 +125,7 @@ export default function Login() {
           </form>
           <p className="text-center text-sm text-white/40 mt-4">
             Pas encore de compte ?{' '}
-            <Link to="/register" className="text-[#1D9E75] font-semibold no-underline hover:underline">Inscrire votre école </Link>
+            <Link to={registerHref} className="text-[#1D9E75] font-semibold no-underline hover:underline">Inscrire votre école </Link>
           </p>
           <div className="px-4 py-3 rounded-xl mt-4" style={{background:'rgba(29,158,117,0.12)',border:'1px solid rgba(29,158,117,0.3)'}}>
             <p className="text-xs font-semibold text-[#1D9E75] mb-1">Compte de test</p>

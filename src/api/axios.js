@@ -98,6 +98,14 @@ export const createLead = (data) =>
 /* ── Countries ── */
 export const getCountries = () =>
   api.get('/v1/countries').then(r => r.data)
+export const getCountryConfig = (code) =>
+  api.get(`/v1/countries/${code}`).then(r => r.data)
+
+/* ── Student Accounts (aprovação de contas criadas por alunos/tutores) ── */
+export const getPendingStudentAccounts = (page = 0, size = 20) =>
+  api.get('/v1/student-accounts/pending', { params: { page, size } }).then(r => r.data)
+export const reviewStudentAccount = (id, data) =>
+  api.put(`/v1/student-accounts/${id}/review`, data).then(r => r.data)
 
 /* ── Dashboard ── */
 export const getDashboard = (schoolId) =>
@@ -118,8 +126,8 @@ export const getGradesByClass = (classLevel, period, year) =>
   api.get(`/v1/grades/class/${classLevel}`, { params: { period, year } }).then(r => r.data)
 export const saveGradesBatch = (data) =>
   api.post('/v1/grades/batch', data).then(r => r.data)
-export const publishGrades = (classLevel) =>
-  api.post(`/v1/grades/publish/${classLevel}`).then(r => r.data)
+export const publishGrades = ({ classLevel, period, year }) =>
+  api.post(`/v1/grades/publish/${classLevel}`, null, { params: { period, year } }).then(r => r.data)
 
 /* ── Payments ── */
 export const getPayments = () =>
@@ -149,13 +157,13 @@ export const getNationalRanking = () =>
 
 /* ── Student Portal ── */
 export const getStudentPortalMe = () =>
-  api.get('/v1/student/portal/me').then(r => r.data)
+  api.get('/v1/student/portal/me').then(r => r.data.data)
 export const getStudentGrades = () =>
-  api.get('/v1/student/portal/grades').then(r => r.data)
+  api.get('/v1/student/portal/grades').then(r => r.data.data)
 export const getStudentPayments = () =>
-  api.get('/v1/student/portal/payments').then(r => r.data)
+  api.get('/v1/student/portal/payments').then(r => r.data.data)
 export const getStudentDocuments = () =>
-  api.get('/v1/student/portal/documents').then(r => r.data)
+  api.get('/v1/student/portal/documents').then(r => r.data.data)
 
 /* ── Enrollments ── */
 export const getEnrollments = () =>

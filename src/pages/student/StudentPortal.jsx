@@ -106,68 +106,90 @@ function HomeTab({ data, user, school, portalMe }) {
 }
 
 /* ── Notes tab ── */
-function NotesTab({ notes }) {
-  const [selectedBim, setSelectedBim] = useState('Bimestre 2')
+/* ── Notes tab ──
+   `grades` é o array cru vindo do backend: [{ period, year, studentAverage, subjects:[...] }, ...]
+   — um bloco por bimestre que já tem nota publicada. Os botões de bimestre são gerados
+   dinamicamente a partir do que existe (não hardcoded), então um 4º/5º bimestre aparece
+   sozinho assim que o backend tiver dados pra ele. */
+const PERIOD_LABELS = {
+  BIMESTRE_1: '1er Bimestre', BIMESTRE_2: '2e Bimestre',
+  BIMESTRE_3: '3e Bimestre', BIMESTRE_4: '4e Bimestre',
+}
 
-  const getAvg = (subjectNotes = []) => {
-    const vals = subjectNotes.map(n => parseFloat(n.value)).filter(v => !isNaN(v))
-    return vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : '—'
+function NotesTab({ grades = [] }) {
+  const availablePeriods = grades.map(g => g.period)
+
+  // Padrão: mostra o bimestre mais recente com nota publicada. Ajusta durante o render
+  // (sem useEffect) se a lista de períodos disponíveis mudar e o selecionado sumir.
+  const [selectedPeriod, setSelectedPeriod] = useState(availablePeriods.at(-1) ?? '')
+  const [prevKey, setPrevKey] = useState('')
+  const periodsKey = availablePeriods.join(',')
+  if (periodsKey !== prevKey) {
+    setPrevKey(periodsKey)
+    if (!availablePeriods.includes(selectedPeriod)) {
+      setSelectedPeriod(availablePeriods.at(-1) ?? '')
+    }
   }
+
+  const current  = grades.find(g => g.period === selectedPeriod)
+  const subjects = current?.subjects ?? []
 
   return (
     <div className="space-y-4">
-      {/* Bimestre selector */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {['Bimestre 1','Bimestre 2','Bimestre 3'].map(b => (
-          <button key={b} onClick={() => setSelectedBim(b)}
-            className={`px-4 py-2 rounded-full text-[12px] font-semibold whitespace-nowrap transition-all flex-shrink-0 ${
-              selectedBim === b
-                ? 'bg-[#1D9E75] text-white shadow-md'
-                : 'bg-white text-[#6B7280] border border-[#E2EDE8] hover:border-[#1D9E75]'
-            }`}>
-            {b}
-          </button>
-        ))}
-      </div>
+      {/* Bimestre selector — gerado a partir dos dados reais */}
+      {availablePeriods.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {availablePeriods.map(p => (
+            <button key={p} onClick={() => setSelectedPeriod(p)}
+              className={`px-4 py-2 rounded-full text-[12px] font-semibold whitespace-nowrap transition-all flex-shrink-0 ${
+                selectedPeriod === p
+                  ? 'bg-[#1D9E75] text-white shadow-md'
+                  : 'bg-white text-[#6B7280] border border-[#E2EDE8] hover:border-[#1D9E75]'
+              }`}>
+              {PERIOD_LABELS[p] ?? p}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* Notes list */}
-      {notes.length === 0 ? (
+      {/* Subjects list */}
+      {subjects.length === 0 ? (
         <div className="bg-white rounded-xl border p-8 text-center text-[#9CA3AF]" style={{ borderColor:'#E2EDE8' }}>
           <div className="text-3xl mb-2">📝</div>
           <p className="text-sm">Aucune note disponible pour ce bimestre</p>
         </div>
-      ) : notes.map((subj, i) => {
-        const avg   = getAvg(subj.notes ?? [])
-        const style = noteStyle(avg)
+      ) : subjects.map((s, i) => {
+        const style = noteStyle(s.average)
         return (
-          <div key={subj.subject ?? i} className="bg-white rounded-xl border overflow-hidden" style={{ borderColor:'#E2EDE8' }}>
+          <div key={s.subject ?? i} className="bg-white rounded-xl border overflow-hidden" style={{ borderColor:'#E2EDE8' }}>
             <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor:'#E2EDE8' }}>
-              <div className="font-syne font-bold text-sm text-[#111827]">{subj.subject ?? subj.name}</div>
+              <div className="font-syne font-bold text-sm text-[#111827]">{s.subject}</div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-medium text-[#6B7280]">{style.label}</span>
                 <div className="font-syne font-extrabold text-lg rounded-lg px-3 py-0.5"
                      style={{ color:style.color, background:style.bg }}>
-                  {avg}
+                  {s.average ?? '—'}
                 </div>
               </div>
             </div>
-            {(subj.notes ?? []).length > 0 && (
-              <div className="flex gap-2 flex-wrap px-5 py-3">
-                {subj.notes.map((n, j) => {
-                  const ns = noteStyle(n.value)
-                  return (
-                    <div key={j} className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg text-center"
-                         style={{ background:ns.bg, minWidth:64 }}>
-                      <span className="font-bold text-[15px]" style={{ color:ns.color }}>{n.value ?? '—'}</span>
-                      <span className="text-[9px] text-[#9CA3AF] leading-tight">{n.label ?? `Note ${j+1}`}</span>
-                      {n.appreciation && (
-                        <span className="text-[8px] font-semibold mt-0.5" style={{ color:ns.color }}>{n.appreciation}</span>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
+            <div className="flex gap-2 flex-wrap px-5 py-3">
+              {[{ label:'Note 1', value:s.grade1 }, { label:'Note 2', value:s.grade2 }].map((n, j) => {
+                const ns = noteStyle(n.value)
+                return (
+                  <div key={j} className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg text-center"
+                       style={{ background:ns.bg, minWidth:64 }}>
+                    <span className="font-bold text-[15px]" style={{ color:ns.color }}>{n.value ?? '—'}</span>
+                    <span className="text-[9px] text-[#9CA3AF] leading-tight">{n.label}</span>
+                  </div>
+                )
+              })}
+              {s.appreciation && (
+                <div className="flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-lg text-center"
+                     style={{ background:style.bg, minWidth:80 }}>
+                  <span className="text-[10px] font-semibold" style={{ color:style.color }}>{s.appreciation}</span>
+                </div>
+              )}
+            </div>
           </div>
         )
       })}
@@ -310,29 +332,71 @@ export default function StudentPortal() {
   const [activeTab, setActiveTab] = useState('home')
 
   /* Separate hooks — each caches independently */
-  const { data: portalMe,  isLoading: loadMe  } = useStudentPortalMe()
+  const { data: portalMe,  isLoading: loadMe, error: portalMeError } = useStudentPortalMe()
   const { data: gradesRaw, isLoading: loadGrades } = useStudentGrades()
   const { data: payments,  isLoading: loadPay  } = useStudentPayments()
   const { data: documents, isLoading: loadDocs } = useStudentDocuments()
 
+  const handleLogout = () => { logout(); navigate('/login') }
+
+  // ── Conta ainda não aprovada/linkada pelo diretor ──
+  // A conta de login (StudentAccount) é separada da ficha do aluno (Student); até o
+  // diretor aprovar e "ligar" as duas, não faz sentido tentar renderizar notas/pagamentos.
+  const accountStatus = portalMe?.status ?? portalMe?.accountStatus
+  if (!loadMe && accountStatus === 'PENDING_APPROVAL') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background:'#0B1E42' }}>
+        <div className="text-5xl mb-4">⏳</div>
+        <div className="font-syne font-bold text-xl text-white mb-2">Compte en attente d'approbation</div>
+        <p className="text-white/50 text-sm max-w-[380px] mb-6">
+          Votre demande a été envoyée à l'école. Vous recevrez accès dès qu'un administrateur confirmera votre identité.
+        </p>
+        <button onClick={handleLogout}
+          className="px-5 py-2.5 rounded-lg text-[13px] font-bold text-white border border-white/20 hover:bg-white/10 transition-colors">
+          Déconnexion
+        </button>
+      </div>
+    )
+  }
+  if (!loadMe && accountStatus === 'REJECTED') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background:'#0B1E42' }}>
+        <div className="text-5xl mb-4">🚫</div>
+        <div className="font-syne font-bold text-xl text-white mb-2">Demande refusée</div>
+        <p className="text-white/50 text-sm max-w-[380px] mb-6">
+          {portalMe?.rejectionReason || "L'école n'a pas pu confirmer votre identité. Contactez l'administration pour plus d'informations."}
+        </p>
+        <button onClick={handleLogout}
+          className="px-5 py-2.5 rounded-lg text-[13px] font-bold text-white border border-white/20 hover:bg-white/10 transition-colors">
+          Déconnexion
+        </button>
+      </div>
+    )
+  }
+  // Se o backend responde com erro para uma conta ainda não linkada (comportamento não confirmado),
+  // trata como "provavelmente pendente" em vez de mostrar uma tela quebrada tentando renderizar dados vazios.
+  if (!loadMe && portalMeError && !portalMe) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background:'#0B1E42' }}>
+        <div className="text-5xl mb-4">⏳</div>
+        <div className="font-syne font-bold text-xl text-white mb-2">Compte en attente d'approbation</div>
+        <p className="text-white/50 text-sm max-w-[380px] mb-6">
+          Votre compte n'est pas encore lié à un dossier élève. Cela peut prendre un peu de temps après l'inscription.
+        </p>
+        <button onClick={handleLogout}
+          className="px-5 py-2.5 rounded-lg text-[13px] font-bold text-white border border-white/20 hover:bg-white/10 transition-colors">
+          Déconnexion
+        </button>
+      </div>
+    )
+  }
+
   /*
-   * StudentGradePortalResponse: { period, year, classAverage, studentAverage, rank, subjects[] }
-   * subjects[]: { subject, grade1, grade2, average, coefficient, appreciation }
-   * Map to the format NotesTab expects: [{ subject, notes: [{value, label}] }]
+   * getMyGrades() retorna List<StudentGradePortalResponse> — um bloco por bimestre
+   * que já tem nota publicada: { period, year, studentAverage, subjects[] }.
+   * O NotesTab consome esse array diretamente (gera as abas de bimestre sozinho).
    */
-  const notesFormatted = gradesRaw
-    ? [{
-        subject:   gradesRaw.period ? `${gradesRaw.period} — ${gradesRaw.year ?? ''}` : 'Notes',
-        average:   gradesRaw.studentAverage,
-        notes: (gradesRaw.subjects ?? []).map(s => ({
-          value: s.average,
-          label: s.subject,
-          grade1: s.grade1,
-          grade2: s.grade2,
-          appreciation: s.appreciation,
-        })),
-      }]
-    : []
+  const gradesByPeriod = Array.isArray(gradesRaw) ? gradesRaw : []
 
   /*
    * StudentPaymentPortalResponse (List) — check actual fields
@@ -343,18 +407,16 @@ export default function StudentPortal() {
   const isLoading = loadMe || loadGrades || loadPay || loadDocs
 
   const data = {
-    notes:    notesFormatted,
+    notes:    gradesByPeriod,
     payments: paymentsFormatted,
     documents: Array.isArray(documents) ? documents : [],
     messages: [],                          /* backend has no /portal/messages — field omitted */
     portalMe,
   }
 
-  const handleLogout = () => { logout(); navigate('/login') }
-
   const tabContent = {
     home:      <HomeTab data={data} user={user} school={school} portalMe={portalMe} />,
-    notes:     <NotesTab notes={data.notes} />,
+    notes:     <NotesTab grades={data.notes} />,
     payments:  <PaymentsTab payments={data.payments} school={school} />,
     documents: <DocumentsTab documents={data.documents} />,
     messages:  <MessagesTab messages={data.messages} />,
