@@ -118,10 +118,23 @@ const T = {
       adminPhone:'Téléphone', adminEmail:'Email', adminPwd:'Mot de passe',
       pwdHint:'Minimum 8 caractères', idDoc:"Document d'identité", idHint:'Pour vérification du compte.',
       s3:'FORFAITS', popular:'Le plus populaire',
+planFeats:{
+  STARTER:["200 élèves","SMS inclus","Portail élève","Support email"],
+  PRO:["1000 élèves","SMS + WhatsApp","Mobile Money","Marketplace","Support prioritaire"],
+  ENTERPRISE:["Illimité","Multi-campus","API dédiée","Support 24/7","Onboarding dédié"],
+},
       prev:'Précédent', next:'Suivant', submit:"Créer l'établissement", submitting:'Création...',
       s4:'Récapitulatif', institutionLabel:'Institution', adminLabel:'Administrateur', planLabel:'Forfait',
       successTitle:'Établissement créé !', successSub:'Vérifiez votre email.', goHome:"Retour à l'accueil",
       errRequired:'Remplissez tous les champs.', errApi:'Erreur. Réessayez.',
+      errGroupCode:'Indiquez le code du groupe scolaire.',
+      groupModeLabel:'Cette école fait-elle partie d\'un groupe scolaire ?',
+      groupModeNone:'École indépendante', groupModeNew:'Créer un nouveau groupe', groupModeExisting:'Rejoindre un groupe existant',
+      groupNameLabel:'Nom du groupe (optionnel)', groupNamePh:'Ex : Groupe Excellence',
+      groupNewHint:'Un code de groupe sera généré — vous pourrez y ajouter d\'autres écoles plus tard.',
+      groupRootCodeLabel:'Code du groupe', groupRootCodePh:'Ex : CM-0001',
+      groupExistingHint:'Demandez ce code à l\'administrateur du groupe.',
+      yourSchoolCode:'Votre code école',
     },
     // student register
     student: {
@@ -310,10 +323,23 @@ const T = {
       adminPhone:'Phone', adminEmail:'Email', adminPwd:'Password',
       pwdHint:'Minimum 8 characters', idDoc:'Identity document', idHint:'For account verification.',
       s3:'PLANS', popular:'Most popular',
+planFeats:{
+  STARTER:['200 students','SMS included','Student portal','Email support'],
+  PRO:['1000 students','SMS + WhatsApp','Mobile Money','Marketplace','Priority support'],
+  ENTERPRISE:['Unlimited','Multi-campus','Dedicated API','24/7 support','Onboarding'],
+},
       prev:'Previous', next:'Next', submit:'Create institution', submitting:'Creating...',
       s4:'Summary', institutionLabel:'Institution', adminLabel:'Administrator', planLabel:'Plan',
       successTitle:'Institution created!', successSub:'Check your email.', goHome:'Back to home',
       errRequired:'Fill in all required fields.', errApi:'An error occurred.',
+      errGroupCode:'Enter the school group code.',
+      groupModeLabel:'Is this school part of a school group?',
+      groupModeNone:'Independent school', groupModeNew:'Create a new group', groupModeExisting:'Join an existing group',
+      groupNameLabel:'Group name (optional)', groupNamePh:'E.g.: Excellence Group',
+      groupNewHint:'A group code will be generated — you can add more schools to it later.',
+      groupRootCodeLabel:'Group code', groupRootCodePh:'E.g.: CM-0001',
+      groupExistingHint:'Ask the group administrator for this code.',
+      yourSchoolCode:'Your school code',
     },
     student: {
       tab1:'I am a student', tab2:'I am a parent / tutor',
@@ -501,10 +527,23 @@ const T = {
       adminPhone:'الهاتف', adminEmail:'البريد', adminPwd:'كلمة المرور',
       pwdHint:'8 أحرف على الأقل', idDoc:'وثيقة هوية المسؤول', idHint:'للتحقق من الحساب.',
       s3:'الخطط', popular:'الأكثر شعبية',
+planFeats:{
+  STARTER:['200 طالب','SMS','بوابة الطالب','دعم إلكتروني'],
+  PRO:['1000 طالب','SMS + WhatsApp','Mobile Money','السوق','دعم متميز'],
+  ENTERPRISE:['غير محدود','متعدد الحرم','API','دعم 24/7','إعداد مخصص'],
+},
       prev:'السابق', next:'التالي', submit:'إنشاء المؤسسة', submitting:'جاري الإنشاء...',
       s4:'ملخص', institutionLabel:'المؤسسة', adminLabel:'المسؤول', planLabel:'الخطة',
       successTitle:'تم الإنشاء!', successSub:'تحقق من بريدك.', goHome:'العودة للرئيسية',
       errRequired:'يرجى ملء جميع الحقول.', errApi:'حدث خطأ.',
+      errGroupCode:'أدخل رمز المجموعة المدرسية.',
+      groupModeLabel:'هل هذه المدرسة جزء من مجموعة مدرسية؟',
+      groupModeNone:'مدرسة مستقلة', groupModeNew:'إنشاء مجموعة جديدة', groupModeExisting:'الانضمام إلى مجموعة موجودة',
+      groupNameLabel:'اسم المجموعة (اختياري)', groupNamePh:'مثال: مجموعة التميز',
+      groupNewHint:'سيتم إنشاء رمز للمجموعة — يمكنك إضافة مدارس أخرى إليها لاحقاً.',
+      groupRootCodeLabel:'رمز المجموعة', groupRootCodePh:'مثال: CM-0001',
+      groupExistingHint:'اطلب هذا الرمز من مسؤول المجموعة.',
+      yourSchoolCode:'رمز مدرستك',
     },
     student: {
       tab1:'أنا طالب', tab2:'أنا ولي أمر / وصي',
@@ -693,10 +732,23 @@ const T = {
       adminPhone:'Telefone', adminEmail:'Email', adminPwd:'Palavra-passe',
       pwdHint:'Mínimo 8 caracteres', idDoc:'Documento de identidade', idHint:'Para verificação da conta.',
       s3:'PLANOS', popular:'Mais popular',
+planFeats:{
+  STARTER:['200 alunos','SMS incluído','Portal do aluno','Suporte email'],
+  PRO:['1000 alunos','SMS + WhatsApp','Mobile Money','Marketplace','Suporte prioritário'],
+  ENTERPRISE:['Ilimitado','Multi-campus','API dedicada','Suporte 24/7','Onboarding'],
+},
       prev:'Anterior', next:'Seguinte', submit:'Criar instituição', submitting:'A criar...',
       s4:'Resumo', institutionLabel:'Instituição', adminLabel:'Administrador', planLabel:'Plano',
       successTitle:'Instituição criada!', successSub:'Verifique o seu email.', goHome:'Voltar ao início',
       errRequired:'Preencha todos os campos obrigatórios.', errApi:'Ocorreu um erro.',
+      errGroupCode:'Informe o código do grupo escolar.',
+      groupModeLabel:'Esta escola faz parte de um grupo escolar?',
+      groupModeNone:'Escola independente', groupModeNew:'Criar um novo grupo', groupModeExisting:'Entrar num grupo existente',
+      groupNameLabel:'Nome do grupo (opcional)', groupNamePh:'Ex: Grupo Excelência',
+      groupNewHint:'Um código de grupo será gerado — você pode adicionar outras escolas a ele depois.',
+      groupRootCodeLabel:'Código do grupo', groupRootCodePh:'Ex: CM-0001',
+      groupExistingHint:'Peça esse código ao administrador do grupo.',
+      yourSchoolCode:'Seu código de escola',
     },
     student: {
       tab1:'Sou aluno', tab2:'Sou encarregado / tutor',
@@ -771,6 +823,7 @@ const T = {
   },
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const LangContext = createContext(null)
 
 export function LangProvider({ children }) {

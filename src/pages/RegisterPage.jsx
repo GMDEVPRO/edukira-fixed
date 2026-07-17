@@ -35,6 +35,7 @@ export default function RegisterPage() {
   const [searchParams] = useSearchParams()
 
   const [theme, setTheme]   = useState('escola')
+  const [picked, setPicked] = useState(false)
   const [step, setStep]     = useState(1)
   const [plan, setPlan]     = useState(searchParams.get('plan')?.toUpperCase() || 'PRO')
   const [toast, setToast]   = useState({ show:false, msg:'', type:'success' })
@@ -48,10 +49,10 @@ export default function RegisterPage() {
     adminIdType:'', adminIdNumber:'',
   })
 
-  // Lê ?theme= da URL (opcional — pré-seleciona o tema sem exigir escolha manual)
+  // Lê ?theme= da URL
   useEffect(() => {
     const th = searchParams.get('theme')
-    if (th === 'uni' || th === 'escola') setTheme(th)
+    if (th === 'uni' || th === 'escola') { setTheme(th); setPicked(true) }
   }, [])
 
   const upd = (key, val) => setF(prev => ({ ...prev, [key]: val }))
@@ -81,7 +82,7 @@ export default function RegisterPage() {
   const submit = async () => {
     setSub(true)
     try {
-      await registerSchool({ ...f, plan, defaultLanguage: f.defaultLanguage.toUpperCase() })
+      await registerSchool({ ...f, plan, defaultLanguage: f.defaultLanguage })
       setDone(true)
     } catch (e) {
       showToast(e.message || r.errApi)
@@ -91,11 +92,73 @@ export default function RegisterPage() {
   const progress = (step / TOTAL) * 100
 
   /* ── Theme colours ── */
+  // eslint-disable-next-line no-unused-vars
+  const primary = theme === 'uni' ? '#1B4332' : '#1249A0'
   const sidebarBg = theme === 'uni' ? '#0F1F17' : '#0B1E42'
 
   const inputCls = `w-full px-3 py-[.6rem] border-[1.5px] border-[#E5E7EB] rounded-[7px] text-[.85rem] font-dm text-[#111827] bg-[#FAFAFA] outline-none transition-all focus:border-[#1D9E75] focus:bg-white placeholder-[#D1D5DB]`
   const selectCls = inputCls
   const labelCls = `text-[.7rem] font-bold text-[#6B7280] uppercase tracking-[.06em] mb-[.28rem] block`
+
+  /* ═══ PICKER ═══ */
+  if (!picked) {
+    return (
+      <div className="min-h-screen flex flex-col" dir={isRTL ? 'rtl' : 'ltr'}>
+        {/* Topbar */}
+        <header className="flex items-center justify-between px-8 py-3 sticky top-0 z-50" style={{ background: sidebarBg }}>
+          <Link to="/" className="font-syne font-bold text-[1.35rem] text-white no-underline">
+            edu<span className="text-[#1D9E75]">kira</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1">
+              {['fr','en','ar'].map(l => (
+                <button key={l} onClick={() => setLang(l)}
+                  className={`px-3 py-1 border rounded text-[.72rem] font-bold cursor-pointer font-dm transition-all ${lang===l ? 'bg-[#1D9E75] border-[#1D9E75] text-white' : 'border-white/15 text-white/50 bg-transparent hover:text-white'}`}>
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <Link to="/" className="text-[.78rem] text-white/45 hover:text-white no-underline transition-colors">← {r.back}</Link>
+          </div>
+        </header>
+
+        {/* Cards */}
+        <main className="flex-1 flex flex-col items-center justify-center px-6 py-12"
+          style={{ background:'linear-gradient(160deg,#060C18 0%,#0B1826 55%,#0F1F12 100%)' }}>
+          <p className="text-[.7rem] font-bold uppercase tracking-[.12em] text-white/28 mb-[.9rem]">{r.pickerEye}</p>
+          <h1 className="font-serif text-[clamp(1.8rem,4vw,2.7rem)] font-semibold text-white text-center mb-2">{r.pickerTitle}</h1>
+          <p className="text-[.85rem] text-white/32 text-center mb-10">{r.pickerSub}</p>
+          <div className="flex flex-col sm:flex-row gap-5 items-center justify-center w-full max-w-[480px]">
+            {/* Escola card */}
+            <button onClick={() => { setTheme('escola'); setPicked(true) }}
+              className="w-full sm:w-[210px] rounded-[14px] overflow-hidden cursor-pointer border border-white/7 bg-[#0E1826] hover:-translate-y-1 hover:border-[#1D9E75] hover:shadow-[0_12px_36px_rgba(0,0,0,0.45),0_0_0_1px_#1D9E75] transition-all text-left">
+              <div className="h-[110px] flex items-center justify-center text-[2.4rem]"
+                style={{ background:'linear-gradient(160deg,#0B1E42,#1249A0)' }}>🏫</div>
+              <div className="p-4">
+                <div className="text-[.83rem] font-bold text-white mb-1">{r.escola}</div>
+                <div className="text-[.72rem] text-white/32 mb-2">{r.escolaDesc}</div>
+                <span className="inline-block px-3 py-[.18rem] rounded-full text-[.68rem] font-bold bg-[rgba(18,73,160,0.3)] text-[#93C5FD]">DM Sans · Bleu</span>
+              </div>
+            </button>
+
+            <div className="text-white/18 text-[.78rem]">{r.or}</div>
+
+            {/* Uni card */}
+            <button onClick={() => { setTheme('uni'); setPicked(true) }}
+              className="w-full sm:w-[210px] rounded-[14px] overflow-hidden cursor-pointer border border-white/7 bg-[#0E1826] hover:-translate-y-1 hover:border-[#1D9E75] hover:shadow-[0_12px_36px_rgba(0,0,0,0.45),0_0_0_1px_#1D9E75] transition-all text-left">
+              <div className="h-[110px] flex items-center justify-center text-[2.4rem]"
+                style={{ background:'linear-gradient(160deg,#0F1F17,#1B4332)' }}>🎓</div>
+              <div className="p-4">
+                <div className="text-[.83rem] font-bold text-white mb-1">{r.uni}</div>
+                <div className="text-[.72rem] text-white/32 mb-2">{r.uniDesc}</div>
+                <span className="inline-block px-3 py-[.18rem] rounded-full text-[.68rem] font-bold bg-[rgba(27,67,50,0.4)] text-[#86EFAC]">Cormorant · Vert</span>
+              </div>
+            </button>
+          </div>
+        </main>
+      </div>
+    )
+  }
 
   /* ═══ FORM ═══ */
   return (
@@ -278,9 +341,9 @@ export default function RegisterPage() {
                   <div className="p-[1.4rem]">
                     <p className="text-[.7rem] font-bold text-[#6B7280] uppercase tracking-[.08em] mb-[.9rem]">{r.s3}</p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-[.85rem]">
-                      {['STARTER','PRO','ENTERPRISE'].map(pid => {
+                     {['STARTER','PRO','ENTERPRISE'].map(pid => {
                         const planData = t.pricing.plans.find(p=>p.id===pid)
-                        const feats = planData?.feats ?? []
+                        const feats = r.planFeats[pid]
                         return (
                           <button key={pid} onClick={() => setPlan(pid)}
                             className={`text-left border-[1.5px] rounded-[10px] p-4 cursor-pointer transition-all relative bg-white ${plan===pid ? 'border-[#1D9E75] bg-[#E1F5EE]' : 'border-[#E5E7EB] hover:border-[#1D9E75]'}`}>

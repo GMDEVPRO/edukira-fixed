@@ -89,7 +89,7 @@ export const loginStudent  = ({ email, password, schoolId }) =>
 
 /* ── Register ── */
 export const registerSchool = (data) =>
-  api.post('/v1/register', data).then(r => r.data)
+  api.post('/v1/register', data).then(r => r.data.data)
 
 /* ── Leads ── */
 export const createLead = (data) =>
