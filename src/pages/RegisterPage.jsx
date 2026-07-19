@@ -343,7 +343,7 @@ export default function RegisterPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-[.85rem]">
                      {['STARTER','PRO','ENTERPRISE'].map(pid => {
                         const planData = t.pricing.plans.find(p=>p.id===pid)
-                        const feats = r.planFeats[pid]
+                        const feats = r.planFeats?.[pid] || []
                         return (
                           <button key={pid} onClick={() => setPlan(pid)}
                             className={`text-left border-[1.5px] rounded-[10px] p-4 cursor-pointer transition-all relative bg-white ${plan===pid ? 'border-[#1D9E75] bg-[#E1F5EE]' : 'border-[#E5E7EB] hover:border-[#1D9E75]'}`}>
