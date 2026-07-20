@@ -988,6 +988,9 @@ export default function Dashboard() {
                style={{ background:'rgba(29,158,117,0.12)', border:'1px solid rgba(29,158,117,0.22)' }}>
             <div className="text-[11px] font-semibold text-white truncate">{school.name ?? d.defaultSchoolName}</div>
             <div className="text-[10px] text-white/40 mt-0.5">{school.country ?? ''} · {d.schoolYear}</div>
+            {school.schoolCode && (
+              <div className="text-[9px] font-mono text-[#5DCAA5] mt-1 tracking-wide">{school.schoolCode}</div>
+            )}
           </div>
         )}
 

@@ -48,7 +48,9 @@ export default function RegisterPage() {
     estimatedStudents:'', defaultLanguage:'fr',
     adminFirstName:'', adminLastName:'', adminRole:'', adminPhone:'', adminEmail:'', adminPassword:'',
     adminIdType:'', adminIdNumber:'',
+    groupMode:'NONE', groupName:'', groupRootCode:'',
   })
+  const [schoolCode, setSchoolCode] = useState('')
 
   // Lê ?theme= da URL
   useEffect(() => {
@@ -68,6 +70,9 @@ export default function RegisterPage() {
       if (!f.schoolName || !f.schoolType || !f.country || !f.city || !f.phone || !f.schoolEmail) {
         showToast(r.errRequired); return false
       }
+      if (f.groupMode === 'EXISTING_GROUP' && !f.groupRootCode.trim()) {
+        showToast(r.errGroupCode); return false
+      }
     }
     if (step === 2) {
       if (!f.adminFirstName || !f.adminLastName || !f.adminRole || !f.adminPhone || !f.adminEmail || !f.adminPassword || f.adminPassword.length < 8) {
@@ -83,7 +88,8 @@ export default function RegisterPage() {
   const submit = async () => {
     setSub(true)
     try {
-      await registerSchool({ ...f, plan, defaultLanguage: f.defaultLanguage })
+      const res = await registerSchool({ ...f, plan, defaultLanguage: f.defaultLanguage })
+      setSchoolCode(res?.schoolCode ?? '')
       setDone(true)
     } catch (e) {
       showToast(e.message || r.errApi)
@@ -286,6 +292,45 @@ export default function RegisterPage() {
                         </select>
                       </div>
                     </div>
+
+                    {/* Vínculo com grupo escolar */}
+                    <div className="mt-[1.1rem] pt-[1.1rem] border-t border-[#E5E7EB]">
+                      <label className={labelCls}>{r.groupModeLabel}</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-[.6rem] mt-[.4rem]">
+                        {[
+                          { id:'NONE',           label:r.groupModeNone },
+                          { id:'NEW_GROUP',      label:r.groupModeNew },
+                          { id:'EXISTING_GROUP', label:r.groupModeExisting },
+                        ].map(opt => (
+                          <button key={opt.id} type="button" onClick={() => upd('groupMode', opt.id)}
+                            className={`text-left border-[1.5px] rounded-[8px] px-3 py-[.6rem] text-[.8rem] font-semibold cursor-pointer transition-all ${
+                              f.groupMode === opt.id
+                                ? 'border-[#1D9E75] bg-[#E1F5EE] text-[#0F6E56]'
+                                : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#1D9E75]'
+                            }`}>
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {f.groupMode === 'NEW_GROUP' && (
+                        <div className="mt-[.9rem]">
+                          <label className={labelCls}>{r.groupNameLabel}</label>
+                          <input value={f.groupName} onChange={e=>upd('groupName',e.target.value)}
+                                 placeholder={r.groupNamePh} className={inputCls} />
+                          <span className="text-[.7rem] text-[#6B7280] mt-[.28rem] block">{r.groupNewHint}</span>
+                        </div>
+                      )}
+
+                      {f.groupMode === 'EXISTING_GROUP' && (
+                        <div className="mt-[.9rem]">
+                          <label className={labelCls}>{r.groupRootCodeLabel} <span className="text-red-500">*</span></label>
+                          <input value={f.groupRootCode} onChange={e=>upd('groupRootCode',e.target.value.toUpperCase())}
+                                 placeholder={r.groupRootCodePh} className={`${inputCls} font-mono`} />
+                          <span className="text-[.7rem] text-[#6B7280] mt-[.28rem] block">{r.groupExistingHint}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -419,10 +464,18 @@ export default function RegisterPage() {
               <div className="text-center py-12 px-8">
                 <CheckCircle2 size={56} className="mx-auto mb-4 text-[#1D9E75]" />
                 <div className="font-syne font-bold text-[1.5rem] text-[#111827] mb-2">{r.successTitle}</div>
-                <div className="text-[.9rem] text-[#6B7280] mb-8 max-w-[400px] mx-auto">{r.successSub}</div>
-                <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-[#1D9E75] text-white rounded-[8px] font-bold text-[.85rem] no-underline hover:bg-[#0F6E56] transition-colors">
-                  ← {r.goHome}
-                </Link>
+                <div className="text-[.9rem] text-[#6B7280] mb-2 max-w-[400px] mx-auto">{r.successSub}</div>
+                {schoolCode ? (
+                  <div className="inline-block bg-[#F4F7F5] border border-[#E5E7EB] rounded-[8px] px-4 py-2.5 mb-6">
+                    <div className="text-[.68rem] font-bold text-[#6B7280] uppercase tracking-[.06em] mb-[.2rem]">{r.yourSchoolCode}</div>
+                    <div className="font-mono font-bold text-[1.1rem] text-[#0F6E56] tracking-wide">{schoolCode}</div>
+                  </div>
+                ) : <div className="mb-6" />}
+                <div>
+                  <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-[#1D9E75] text-white rounded-[8px] font-bold text-[.85rem] no-underline hover:bg-[#0F6E56] transition-colors">
+                    ← {r.goHome}
+                  </Link>
+                </div>
               </div>
             )}
           </div>
