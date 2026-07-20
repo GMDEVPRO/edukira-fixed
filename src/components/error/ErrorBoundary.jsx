@@ -1,4 +1,5 @@
 import { Component, useState, useCallback } from 'react'
+import { AlertTriangle, RotateCcw, RefreshCw } from 'lucide-react'
 
 /**
  * ErrorBoundary global — captura erros React em qualquer sub-árvore.
@@ -45,7 +46,7 @@ export class ErrorBoundary extends Component {
     if (minimal) {
       return (
         <div className="flex flex-col items-center justify-center gap-3 py-10 px-4 text-center">
-          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-2xl">⚠️</div>
+          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center"><AlertTriangle size={20} className="text-red-500" /></div>
           <div>
             <p className="font-semibold text-[#374151] text-sm">{section ?? 'Section'} indisponible</p>
             <p className="text-[#9CA3AF] text-xs mt-0.5">Une erreur inattendue s'est produite</p>
@@ -66,8 +67,8 @@ export class ErrorBoundary extends Component {
           <div className="bg-white rounded-2xl border border-[#E2EDE8] shadow-[0_8px_40px_rgba(11,30,66,0.1)] overflow-hidden">
             <div className="h-1 w-full" style={{ background:'linear-gradient(90deg,#DC2626,#F97316)' }} />
             <div className="p-8 text-center">
-              <div className="w-20 h-20 rounded-2xl mx-auto mb-5 flex items-center justify-center text-4xl"
-                   style={{ background:'#FEF2F2', border:'2px solid #FEE2E2' }}>🚨</div>
+              <div className="w-20 h-20 rounded-2xl mx-auto mb-5 flex items-center justify-center"
+                   style={{ background:'#FEF2F2', border:'2px solid #FEE2E2' }}><AlertTriangle size={32} className="text-red-500" /></div>
 
               <h2 className="font-syne font-extrabold text-[1.4rem] text-[#111827] mb-2">
                 Oops ! Quelque chose s'est cassé
@@ -93,12 +94,12 @@ export class ErrorBoundary extends Component {
                   <button onClick={this.handleRetry}
                     className="w-full py-3 rounded-xl font-semibold text-white text-sm hover:opacity-90 transition-all active:scale-[.98]"
                     style={{ background:'#1D9E75', boxShadow:'0 4px 14px rgba(29,158,117,0.35)' }}>
-                    🔄 Réessayer ({3 - retryCount} tentative{3 - retryCount > 1 ? 's' : ''} restante{3 - retryCount > 1 ? 's' : ''})
+                    <RotateCcw size={14} className="inline -mt-0.5 mr-1.5" /> Réessayer ({3 - retryCount} tentative{3 - retryCount > 1 ? 's' : ''} restante{3 - retryCount > 1 ? 's' : ''})
                   </button>
                 )}
                 <button onClick={this.handleReload}
                   className="w-full py-3 rounded-xl font-semibold text-[#374151] text-sm hover:bg-[#F4F7F5] border border-[#E2EDE8] transition-all">
-                  🔃 Recharger la page
+                  <RefreshCw size={14} className="inline -mt-0.5 mr-1.5" /> Recharger la page
                 </button>
                 <a href="/" className="w-full py-3 rounded-xl font-semibold text-[#6B7280] text-sm hover:text-[#1D9E75] text-center no-underline transition-all">
                   ← Retour à l'accueil
@@ -107,7 +108,6 @@ export class ErrorBoundary extends Component {
             </div>
             <div className="px-8 py-4 border-t border-[#E2EDE8] bg-[#FAFAFA] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-[#1D9E75] flex items-center justify-center font-syne font-bold text-white text-[10px]">E</div>
                 <span className="font-syne font-bold text-[13px] text-[#111827]">Edukira<span className="text-[#1D9E75]">.</span></span>
               </div>
               <p className="text-[11px] text-[#9CA3AF]">contact@edukira.com</p>

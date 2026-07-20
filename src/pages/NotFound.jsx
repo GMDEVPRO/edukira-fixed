@@ -19,7 +19,6 @@ export default function NotFound() {
 
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2.5 no-underline mb-12">
-        <div className="w-9 h-9 rounded-[10px] bg-[#1D9E75] flex items-center justify-center font-syne font-bold text-white text-base">E</div>
         <span className="font-syne font-bold text-[20px] text-[#111827]">
           Edukira<span className="text-[#1D9E75]">.</span>
         </span>

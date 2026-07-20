@@ -1,8 +1,43 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { Plus, ChevronDown } from 'lucide-react'
 import { useLang } from '../../hooks/useLang'
 
-const LANG_FLAGS = { fr:'🇫🇷', en:'🇬🇧', ar:'🇸🇦', pt:'🇵🇹' }
+/** Dropdown compacto de idioma — só o código ativo fica visível; clicar abre as outras opções. */
+function LangDropdown({ lang, setLang, langs, size = 30 }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const onClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [])
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        aria-haspopup="listbox" aria-expanded={open}
+        className="flex items-center gap-1 rounded-full border border-[#1D9E75] bg-white text-[#0F6E56] font-bold transition-all hover:bg-[#E1F5EE]"
+        style={{ height: size, padding: '0 10px', fontSize: 11 }}
+      >
+        {lang.toUpperCase()}
+        <ChevronDown size={12} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-1.5 rounded-xl bg-white shadow-lg border border-[#E5EDE9] overflow-hidden z-50" style={{ minWidth: 64 }}>
+          {langs.filter(c => c !== lang).map(code => (
+            <button key={code} onClick={() => { setLang(code); setOpen(false) }}
+              className="block w-full text-left px-3 py-2 text-[11px] font-bold text-[#6B7280] hover:bg-[#E1F5EE] hover:text-[#0F6E56] transition-colors">
+              {code.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function Navbar() {
   const { lang, setLang, t, isRTL, langs } = useLang()
@@ -50,8 +85,6 @@ export default function Navbar() {
       >
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 no-underline flex-shrink-0">
-          <div className="flex items-center justify-center rounded-[9px] font-syne font-extrabold text-white flex-shrink-0"
-               style={{ width:32, height:32, background:'#1D9E75', fontSize:15 }}>E</div>
           <span className="font-syne font-extrabold text-[19px] text-[#111827] tracking-tight">
             Edukira<span style={{ color:'#1D9E75' }}>.</span>
           </span>
@@ -69,38 +102,17 @@ export default function Navbar() {
 
         {/* Desktop right */}
         <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
-          {/* Lang toggle — FR EN AR PT */}
-          <div className="flex items-center gap-[2px] rounded-full p-[3px]"
-               style={{ background:'#F4F7F5', border:'1px solid #E2EDE8' }}>
-            {langs.map((code) => (
-              <button key={code} onClick={() => setLang(code)}
-                className={`flex items-center gap-1 rounded-full text-[11px] font-bold transition-all px-2.5 py-1 ${
-                  lang === code ? 'bg-[#1D9E75] text-white shadow-sm' : 'text-[#6B7280] hover:text-[#1D9E75] hover:bg-white'
-                }`}>
-                <span className="text-[12px]">{LANG_FLAGS[code]}</span>
-                <span>{code.toUpperCase()}</span>
-              </button>
-            ))}
-          </div>
+          <LangDropdown lang={lang} setLang={setLang} langs={langs} size={30} />
           <Link to="/login"
             className="inline-flex items-center gap-1.5 font-semibold text-white rounded-full no-underline hover:opacity-90 hover:-translate-y-px transition-all"
             style={{ padding:'9px 18px', fontSize:13, background:'#1D9E75', boxShadow:'0 4px 14px rgba(29,158,117,0.32)' }}>
-            ✦ {t?.nav?.start || 'Get started'}
+            <Plus size={14} /> {t?.nav?.start || 'Get started'}
           </Link>
         </div>
 
-        {/* Mobile right: mini flags + burger */}
+        {/* Mobile right: lang dropdown + burger */}
         <div className="lg:hidden flex items-center gap-2">
-          <div className="flex items-center gap-[2px] rounded-full p-[2px]"
-               style={{ background:'#F4F7F5', border:'1px solid #E2EDE8' }}>
-            {langs.map((code) => (
-              <button key={code} onClick={() => setLang(code)}
-                className={`flex items-center justify-center rounded-full text-[13px] transition-all ${lang === code ? 'bg-[#1D9E75] shadow-sm' : 'hover:bg-white'}`}
-                style={{ width:26, height:26 }}>
-                {LANG_FLAGS[code]}
-              </button>
-            ))}
-          </div>
+          <LangDropdown lang={lang} setLang={setLang} langs={langs} size={28} />
 
           {/* Hamburger — 3 bars → X */}
           <button onClick={() => setOpen(o => !o)} aria-label="Menu" aria-expanded={open}
@@ -135,7 +147,7 @@ export default function Navbar() {
           <Link to="/login" onClick={() => setOpen(false)}
             className="font-bold text-white rounded-full no-underline text-center hover:opacity-90 active:scale-95 transition-all"
             style={{ display:'block', padding:14, fontSize:14, background:'#1D9E75', boxShadow:'0 6px 20px rgba(29,158,117,0.38)' }}>
-            ✦ {t?.nav?.start || 'Get started'}
+            <Plus size={14} className="inline -mt-0.5 mr-1" /> {t?.nav?.start || 'Get started'}
           </Link>
         </div>
       </div>

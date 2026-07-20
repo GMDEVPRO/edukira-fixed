@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Check, ArrowRight, Play, AlertCircle, School as SchoolIcon, GraduationCap } from 'lucide-react'
 import { useLang } from '../../hooks/useLang'
 import { useReveal } from '../../hooks/useReveal'
 import { createLead } from '../../lib/api'
+import VideoModal from '../ui/VideoModal'
 
 /* ═══ PROBLEM / SOLUTION ═══ */
 export function ProblemSolution() {
@@ -10,8 +12,8 @@ export function ProblemSolution() {
   const ref = useReveal()
   return (
     <section id="problem-solution" ref={ref} className="reveal max-w-[1200px] mx-auto px-10 lg:px-20 py-24">
-      <div className="inline-block text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{r.label}</div>
-      <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-4 max-w-[700px]">{r.title}</h2>
+      <div className="block w-fit mx-auto text-center text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{r.label}</div>
+      <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-4 max-w-[700px] mx-auto text-center">{r.title}</h2>
       <div className={`grid grid-cols-1 md:grid-cols-2 gap-10 mt-8 ${isRTL ? 'text-right' : ''}`}>
         {/* Problem */}
         <div className="bg-white p-8 rounded-[14px] border border-[#E5EDE9]">
@@ -47,10 +49,10 @@ export function Features() {
   return (
     <section id="features" ref={ref} className="reveal bg-[#F8FAF9] py-24 px-10 lg:px-20">
       <div className="max-w-[1200px] mx-auto">
-        <div className="inline-block text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{f.label}</div>
-        <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-4 max-w-[700px]">{f.title}</h2>
-        <p className="text-[17px] text-[#6B7280] leading-[1.6] max-w-[700px] mb-12">{f.sub}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+        <div className="block w-fit mx-auto text-center text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{f.label}</div>
+        <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-4 max-w-[700px] mx-auto text-center">{f.title}</h2>
+        <p className="text-[17px] text-[#6B7280] leading-[1.6] max-w-[700px] mb-12 mx-auto text-center">{f.sub}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 stagger-grid">
           {f.items.map((item) => (
             <FeatureCard key={item.title} item={item} />
           ))}
@@ -83,9 +85,9 @@ export function Integrations() {
   return (
     <section id="integrations" ref={ref} className="reveal bg-[#0B1E42] py-24 px-10 lg:px-20">
       <div className="max-w-[1200px] mx-auto">
-        <div className="inline-block text-xs font-bold text-[#F59E0B] uppercase tracking-[2px] mb-[14px]">{g.label}</div>
-        <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] text-white mb-4 max-w-[700px]">{g.title}</h2>
-        <p className="text-[17px] text-white/75 leading-[1.6] max-w-[700px] mb-12">{g.sub}</p>
+        <div className="block w-fit mx-auto text-center text-xs font-bold text-[#F59E0B] uppercase tracking-[2px] mb-[14px]">{g.label}</div>
+        <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] text-white mb-4 max-w-[700px] mx-auto text-center">{g.title}</h2>
+        <p className="text-[17px] text-white/75 leading-[1.6] max-w-[700px] mb-12 mx-auto text-center">{g.sub}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {g.groups.map((group) => (
             <div key={group.label}>
@@ -121,24 +123,53 @@ export function Testimonials() {
   return (
     <section id="social-proof" ref={ref} className="reveal bg-[#F8FAF9] py-24 px-10 lg:px-20">
       <div className="max-w-[1200px] mx-auto">
-        <div className="inline-block text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{s.label}</div>
-        <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-12 max-w-[700px]">{s.title}</h2>
+        <div className="block w-fit mx-auto text-center text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{s.label}</div>
+        <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-12 max-w-[700px] mx-auto text-center">{s.title}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mb-12">
-          {s.items.map((item) => (
-            <div key={item.name} className="bg-white p-8 rounded-[14px] border border-[#E5EDE9] shadow-sm">
-              <p className="text-[16px] leading-[1.7] italic mb-5">« {item.quote} »</p>
-              <div className="font-bold text-[#111827]">{item.name}</div>
-              <div className="text-[13px] text-[#6B7280] mt-1">{item.role}</div>
-            </div>
-          ))}
+          {s.items.map((item, i) => {
+            const initials = item.name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()
+            const avColor = ['#1D9E75', '#F59E0B', '#7C3AED', '#0B1E42'][i % 4]
+            return (
+              <div key={item.name} className="bg-white p-8 rounded-[14px] border border-[#E5EDE9] shadow-sm">
+                <p className="text-[16px] leading-[1.7] italic mb-5">« {item.quote} »</p>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0"
+                    style={{ background: avColor }}
+                  >
+                    {initials}
+                  </div>
+                  <div>
+                    <div className="font-bold text-[#111827]">{item.name}</div>
+                    <div className="text-[13px] text-[#6B7280] mt-0.5">{item.role}</div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
-        <div className="flex flex-wrap justify-around items-center bg-[#1D9E75] text-white rounded-[14px] px-8 py-10 gap-6">
-          {s.stats.map((st) => (
-            <div key={st.lbl} className="text-center">
-              <div className="font-syne font-extrabold text-[42px] leading-none">{st.val}</div>
-              <div className="text-[15px] mt-2 opacity-85">{st.lbl}</div>
-            </div>
-          ))}
+        <div
+          className="relative overflow-hidden rounded-[14px] px-8 py-10"
+          style={{ background: 'linear-gradient(120deg, #0B1E42 0%, #0F6E56 100%)' }}
+        >
+          {/* Textura de pontos sutil */}
+          <div
+            className="absolute inset-0 opacity-[0.12] pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '16px 16px' }}
+          />
+          <div className="relative flex flex-wrap justify-around items-center text-white gap-6">
+            {s.stats.map((st, i) => {
+              const Icon = [SchoolIcon, Check, GraduationCap][i % 3]
+              return (
+                <div key={st.lbl}
+                  className={`text-center px-6 ${i > 0 ? 'md:border-l md:border-white/15' : ''}`}>
+                  <Icon size={22} className="mx-auto mb-2 text-[#6EE7B7]" />
+                  <div className="font-syne font-extrabold text-[42px] leading-none">{st.val}</div>
+                  <div className="text-[15px] mt-2 opacity-85">{st.lbl}</div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     </section>
@@ -151,8 +182,8 @@ export function HowItWorks() {
   const ref = useReveal()
   return (
     <section id="how-it-works" ref={ref} className="reveal max-w-[1200px] mx-auto px-10 lg:px-20 py-24">
-      <div className="inline-block text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{h.label}</div>
-      <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-12 max-w-[700px]">{h.title}</h2>
+      <div className="block w-fit mx-auto text-center text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{h.label}</div>
+      <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-12 max-w-[700px] mx-auto text-center">{h.title}</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
         {h.steps.map((step) => (
           <div key={step.n} className="bg-white p-8 rounded-[14px] border border-[#E5EDE9] shadow-sm text-center">
@@ -173,10 +204,10 @@ export function Pricing() {
   return (
     <section id="pricing" ref={ref} className="reveal py-24 px-10 lg:px-20" style={{ background:'linear-gradient(135deg,#f0faf5 0%,#ffffff 55%,#f0f4ff 100%)' }}>
       <div className="max-w-[1200px] mx-auto">
-        <div className="inline-block text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{p.label}</div>
-        <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-4 max-w-[700px]">{p.title}</h2>
-        <p className="text-[17px] text-[#6B7280] leading-[1.6] max-w-[700px] mb-12">{p.sub}</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-7 items-start">
+        <div className="block w-fit mx-auto text-center text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{p.label}</div>
+        <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-4 max-w-[700px] mx-auto text-center">{p.title}</h2>
+        <p className="text-[17px] text-[#6B7280] leading-[1.6] max-w-[700px] mb-12 mx-auto text-center">{p.sub}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-7 items-start stagger-grid">
           {p.plans.map((plan) => (
             <PriceCard key={plan.id} plan={plan} popular={p.popular} />
           ))}
@@ -187,8 +218,9 @@ export function Pricing() {
 }
 
 function PriceCard({ plan, popular }) {
+  const ref = useReveal()
   return (
-    <div className={`bg-white p-10 rounded-[14px] flex flex-col relative transition-all border ${plan.featured ? 'border-[#1D9E75] shadow-md -translate-y-2.5' : 'border-[#E5EDE9] shadow-sm'}`}>
+    <div ref={ref} className={`reveal bg-white p-10 rounded-[14px] flex flex-col relative transition-all border ${plan.featured ? 'border-[#1D9E75] shadow-md -translate-y-2.5' : 'border-[#E5EDE9] shadow-sm'}`}>
       {plan.featured && (
         <div className="absolute -top-px left-1/2 -translate-x-1/2 bg-[#1D9E75] text-white text-[11px] font-bold px-4 py-1 rounded-b-[10px]">
           {popular}
@@ -202,14 +234,14 @@ function PriceCard({ plan, popular }) {
       </div>
       <ul className="list-none flex-1 space-y-[10px] mb-7">
         {plan.feats.map(f => (
-          <li key={f} className="text-[15px] relative pl-[22px]">
-            <span className="absolute left-0 text-[#1D9E75] font-bold">✓</span>{f}
+          <li key={f} className="text-[15px] flex items-start gap-2">
+            <Check size={16} className="text-[#1D9E75] flex-shrink-0 mt-[3px]" strokeWidth={2.5} />{f}
           </li>
         ))}
       </ul>
       <Link to={`/login?plan=${plan.id}`}
-        className="w-full flex justify-center items-center px-[30px] py-[14px] bg-[#1D9E75] text-white text-[15px] font-semibold rounded-full hover:bg-[#0F6E56] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(29,158,117,0.32)] transition-all no-underline">
-        {plan.name} →
+        className="w-full flex justify-center items-center gap-1.5 px-[30px] py-[14px] bg-[#1D9E75] text-white text-[15px] font-semibold rounded-full hover:bg-[#0F6E56] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(29,158,117,0.32)] transition-all no-underline">
+        {plan.name} <ArrowRight size={16} />
       </Link>
     </div>
   )
@@ -223,6 +255,7 @@ export function Contact() {
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
   const [lastSubmit, setLastSubmit] = useState(0)
+  const [demoOpen, setDemoOpen] = useState(false)
 
   const REQUIRED_MSGS = {
     name:   { fr:'Nom requis',      en:'Name required',    ar:'الاسم مطلوب',       pt:'Nome obrigatório' },
@@ -277,58 +310,102 @@ export function Contact() {
       : 'border-[#E5EDE9] focus:border-[#1D9E75] focus:bg-white',
   ].join(' ')
 
+  const avatars = [
+    { initials: 'AN', color: '#1D9E75' },
+    { initials: 'KD', color: '#F59E0B' },
+    { initials: 'FT', color: '#7C3AED' },
+  ]
+
   return (
     <section id="contact" ref={ref} className="reveal max-w-[1200px] mx-auto px-10 lg:px-20 py-24"
              dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="inline-block text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{c.label}</div>
-      <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-4 max-w-[700px]">{c.title}</h2>
-      <p className="text-[17px] text-[#6B7280] leading-[1.6] max-w-[700px] mb-12">{c.sub}</p>
+      <div className="block w-fit mx-auto text-center text-xs font-bold text-[#1D9E75] uppercase tracking-[2px] mb-[14px]">{c.label}</div>
+      <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-4 max-w-[700px] mx-auto text-center">{c.title}</h2>
 
-      <div className="max-w-[600px] mx-auto">
-        <form onSubmit={submit} noValidate
-              className="bg-white p-10 rounded-[14px] border border-[#E5EDE9] shadow-md flex flex-col gap-4">
+      <div className="max-w-[900px] mx-auto rounded-[18px] border border-[#E5EDE9] shadow-md overflow-hidden grid grid-cols-1 md:grid-cols-[1fr_1.2fr]">
 
-          {/* Name */}
+        {/* Painel de contexto — esquerda */}
+        <div className="p-10 flex flex-col justify-between text-white" style={{ background: 'linear-gradient(155deg,#0B1E42 0%,#0F6E56 100%)' }}>
           <div>
-            <input name="name" value={form.name} onChange={handle}
-                   placeholder={c.namePh} className={inputCls('name')} />
-            {errors.name && <p className="text-red-500 text-[11px] mt-1 flex items-center gap-1">⚠ {errors.name}</p>}
+            <h3 className="font-syne text-2xl font-bold mb-2 leading-snug">{c.title}</h3>
+            <p className="text-white/70 text-[14px] leading-relaxed mb-6">{c.sub}</p>
+            <div className="space-y-3">
+              {[c.benefit1, c.benefit2, c.benefit3].map(b => (
+                <div key={b} className="flex items-center gap-2.5 text-[14px] font-medium">
+                  <Check size={16} className="text-[#6EE7B7] flex-shrink-0" />{b}
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setDemoOpen(true)}
+              className="mt-7 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full px-4 py-2 text-[13px] font-semibold transition-colors"
+            >
+              <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                <Play size={10} className="text-[#0B1E42] ml-px" fill="currentColor" />
+              </div>
+              {c.watchDemo}
+            </button>
           </div>
 
-          {/* Email */}
-          <div>
-            <input name="email" value={form.email} onChange={handle}
-                   type="email" placeholder={c.emailPh} className={inputCls('email')} />
-            {errors.email && <p className="text-red-500 text-[11px] mt-1 flex items-center gap-1">⚠ {errors.email}</p>}
+          <div className="mt-10">
+            <div className="flex -space-x-2.5">
+              {avatars.map(a => (
+                <div key={a.initials}
+                  className="w-8 h-8 rounded-full border-2 border-[#0B1E42] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                  style={{ background: a.color }}>
+                  {a.initials}
+                </div>
+              ))}
+            </div>
+            <p className="text-white/60 text-[12px] mt-2">+54 {c.trustCaption}</p>
           </div>
+        </div>
 
-          {/* School */}
-          <div>
-            <input name="school" value={form.school} onChange={handle}
-                   placeholder={c.schoolPh} className={inputCls('school')} />
-            {errors.school && <p className="text-red-500 text-[11px] mt-1 flex items-center gap-1">⚠ {errors.school}</p>}
-          </div>
+        {/* Formulário — direita */}
+        <div className="p-8 md:p-10 bg-white">
+          <form onSubmit={submit} noValidate className="flex flex-col gap-4">
 
-          {/* Phone (optional) */}
-          <input name="phone" value={form.phone} onChange={handle}
-                 type="tel" placeholder={c.phonePh} className={inputCls('phone')} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <input name="name" value={form.name} onChange={handle}
+                       placeholder={c.namePh} className={inputCls('name')} />
+                {errors.name && <p className="text-red-500 text-[11px] mt-1 flex items-center gap-1"><AlertCircle size={12} /> {errors.name}</p>}
+              </div>
+              <div>
+                <input name="email" value={form.email} onChange={handle}
+                       type="email" placeholder={c.emailPh} className={inputCls('email')} />
+                {errors.email && <p className="text-red-500 text-[11px] mt-1 flex items-center gap-1"><AlertCircle size={12} /> {errors.email}</p>}
+              </div>
+            </div>
 
-          {/* Message (optional) */}
-          <textarea name="message" value={form.message} onChange={handle}
-                    rows={4} placeholder={c.msgPh}
-                    className={`${inputCls('message')} resize-y`} />
+            <div>
+              <input name="school" value={form.school} onChange={handle}
+                     placeholder={c.schoolPh} className={inputCls('school')} />
+              {errors.school && <p className="text-red-500 text-[11px] mt-1 flex items-center gap-1"><AlertCircle size={12} /> {errors.school}</p>}
+            </div>
 
-          <button type="submit" disabled={status === 'sending'}
-            className={`w-full flex justify-center items-center px-[30px] py-[14px] text-white text-[15px] font-semibold rounded-full transition-all mt-2 ${
-              status === 'sent'    ? 'bg-[#059669]' :
-              status === 'error'   ? 'bg-[#DC2626]' :
-              status === 'sending' ? 'bg-[#F59E0B] opacity-80 cursor-not-allowed' :
-              'bg-[#1D9E75] hover:bg-[#0F6E56] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(29,158,117,0.32)]'
-            }`}>
-            {status === 'sending' ? c.sending : status === 'sent' ? c.sent : status === 'error' ? c.error : c.submit}
-          </button>
-        </form>
+            <input name="phone" value={form.phone} onChange={handle}
+                   type="tel" placeholder={c.phonePh} className={inputCls('phone')} />
+
+            <textarea name="message" value={form.message} onChange={handle}
+                      rows={3} placeholder={c.msgPh}
+                      className={`${inputCls('message')} resize-y`} />
+
+            <button type="submit" disabled={status === 'sending'}
+              className={`w-full flex justify-center items-center px-[30px] py-[14px] text-white text-[15px] font-semibold rounded-full transition-all mt-1 ${
+                status === 'sent'    ? 'bg-[#059669]' :
+                status === 'error'   ? 'bg-[#DC2626]' :
+                status === 'sending' ? 'bg-[#F59E0B] opacity-80 cursor-not-allowed' :
+                'bg-[#1D9E75] hover:bg-[#0F6E56] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(29,158,117,0.32)]'
+              }`}>
+              {status === 'sending' ? c.sending : status === 'sent' ? c.sent : status === 'error' ? c.error : c.submit}
+            </button>
+          </form>
+        </div>
       </div>
+
+      <VideoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
     </section>
   )
 }

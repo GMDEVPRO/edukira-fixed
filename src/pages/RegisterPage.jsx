@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { School, GraduationCap, Check, Rocket, CheckCircle2 } from 'lucide-react'
 import { useLang } from '../hooks/useLang'
 import { registerSchool } from '../lib/api'
 
@@ -133,7 +134,7 @@ export default function RegisterPage() {
             <button onClick={() => { setTheme('escola'); setPicked(true) }}
               className="w-full sm:w-[210px] rounded-[14px] overflow-hidden cursor-pointer border border-white/7 bg-[#0E1826] hover:-translate-y-1 hover:border-[#1D9E75] hover:shadow-[0_12px_36px_rgba(0,0,0,0.45),0_0_0_1px_#1D9E75] transition-all text-left">
               <div className="h-[110px] flex items-center justify-center text-[2.4rem]"
-                style={{ background:'linear-gradient(160deg,#0B1E42,#1249A0)' }}>🏫</div>
+                style={{ background:'linear-gradient(160deg,#0B1E42,#1249A0)' }}><School size={32} className="text-white" /></div>
               <div className="p-4">
                 <div className="text-[.83rem] font-bold text-white mb-1">{r.escola}</div>
                 <div className="text-[.72rem] text-white/32 mb-2">{r.escolaDesc}</div>
@@ -147,7 +148,7 @@ export default function RegisterPage() {
             <button onClick={() => { setTheme('uni'); setPicked(true) }}
               className="w-full sm:w-[210px] rounded-[14px] overflow-hidden cursor-pointer border border-white/7 bg-[#0E1826] hover:-translate-y-1 hover:border-[#1D9E75] hover:shadow-[0_12px_36px_rgba(0,0,0,0.45),0_0_0_1px_#1D9E75] transition-all text-left">
               <div className="h-[110px] flex items-center justify-center text-[2.4rem]"
-                style={{ background:'linear-gradient(160deg,#0F1F17,#1B4332)' }}>🎓</div>
+                style={{ background:'linear-gradient(160deg,#0F1F17,#1B4332)' }}><GraduationCap size={32} className="text-white" /></div>
               <div className="p-4">
                 <div className="text-[.83rem] font-bold text-white mb-1">{r.uni}</div>
                 <div className="text-[.72rem] text-white/32 mb-2">{r.uniDesc}</div>
@@ -194,7 +195,7 @@ export default function RegisterPage() {
             <div className="flex items-center justify-between px-[1.4rem] py-4" style={{ background:'#1D9E75' }}>
               <div className="flex items-center gap-3">
                 <div className="w-[30px] h-[30px] rounded-lg bg-white/18 flex items-center justify-center text-base">
-                  {theme==='uni' ? '🎓' : '🏫'}
+                  {theme==='uni' ? <GraduationCap size={16} className="text-white" /> : <School size={16} className="text-white" />}
                 </div>
                 <div>
                   <div className="text-[.9rem] font-bold text-white">{theme==='uni' ? r.uni : r.escola}</div>
@@ -211,7 +212,7 @@ export default function RegisterPage() {
                 const state = n < step ? 'done' : n === step ? 'active' : 'pending'
                 return (
                   <div key={label} className="flex items-center flex-1">
-                    <div className={`step-num ${state}`}>{state==='done' ? '✓' : n}</div>
+                    <div className={`step-num ${state}`}>{state==='done' ? <Check size={12} strokeWidth={3} /> : n}</div>
                     <span className={`text-[.75rem] font-semibold ml-[.45rem] ${state==='active' ? 'text-[#1D9E75]' : state==='done' ? 'text-[#0F6E56]' : 'text-[#9CA3AF]'} hidden sm:block`}>{label}</span>
                     {i < r.steps.length-1 && (
                       <div className={`flex-1 h-0.5 rounded mx-[.3rem] ${n < step ? 'bg-[#1D9E75]' : 'bg-[#E5E7EB]'}`} />
@@ -408,7 +409,7 @@ export default function RegisterPage() {
                   ) : (
                     <button onClick={submit} disabled={submitting}
                       className="flex items-center gap-[.45rem] px-7 py-[.6rem] border-none rounded-[8px] bg-[#1D9E75] text-white text-[.85rem] font-bold cursor-pointer hover:bg-[#0F6E56] hover:-translate-y-px transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-                      {submitting ? `⏳ ${r.submitting}` : `🚀 ${r.submit}`}
+                      {submitting ? r.submitting : (<><Rocket size={15} className="inline -mt-0.5 mr-1.5" />{r.submit}</>)}
                     </button>
                   )}
                 </div>
@@ -416,7 +417,7 @@ export default function RegisterPage() {
             ) : (
               /* Success screen */
               <div className="text-center py-12 px-8">
-                <div className="text-[3.5rem] mb-4">✅</div>
+                <CheckCircle2 size={56} className="mx-auto mb-4 text-[#1D9E75]" />
                 <div className="font-syne font-bold text-[1.5rem] text-[#111827] mb-2">{r.successTitle}</div>
                 <div className="text-[.9rem] text-[#6B7280] mb-8 max-w-[400px] mx-auto">{r.successSub}</div>
                 <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-[#1D9E75] text-white rounded-[8px] font-bold text-[.85rem] no-underline hover:bg-[#0F6E56] transition-colors">

@@ -1,5 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import {
+  LayoutDashboard, PenLine, CreditCard, FileText, MessageCircle,
+  BookOpen, TrendingUp, AlertTriangle, User, Receipt, Download,
+} from 'lucide-react'
 import { useStudentPortalMe, useStudentGrades, useStudentPayments, useStudentDocuments } from '../../hooks/useSchoolData'
 import api from '../../api/axios'
 import useAuthStore from '../../store/authStore'
@@ -18,17 +22,19 @@ const noteStyle = (val) => {
 }
 
 const TABS = [
-  { id:'home',      icon:'📊', label:'Tableau de bord' },
-  { id:'notes',     icon:'📝', label:'Mes notes' },
-  { id:'payments',  icon:'💳', label:'Paiements', badge:true },
-  { id:'documents', icon:'📄', label:'Documents' },
-  { id:'messages',  icon:'💬', label:'Messages',  badge:true },
+  { id:'home',      icon: LayoutDashboard, label:'Tableau de bord' },
+  { id:'notes',     icon: PenLine,         label:'Mes notes' },
+  { id:'payments',  icon: CreditCard,      label:'Paiements', badge:true },
+  { id:'documents', icon: FileText,        label:'Documents' },
+  { id:'messages',  icon: MessageCircle,   label:'Messages',  badge:true },
 ]
 
+/* Monograma colorido — meio-termo seguro até decidir sobre uso do logo oficial
+   de cada operadora (Wave / Orange Money / MTN MoMo são marcas de terceiros). */
 const PAYMENT_METHODS = [
-  { id:'WAVE',         label:'Wave',         icon:'🌊', color:'#1BAAED' },
-  { id:'ORANGE_MONEY', label:'Orange Money', icon:'🟠', color:'#FF6900' },
-  { id:'MTN_MOMO',     label:'MTN MoMo',     icon:'🟡', color:'#FFCC00' },
+  { id:'WAVE',         label:'Wave',         mono:'W',  color:'#1BAAED', text:'#fff' },
+  { id:'ORANGE_MONEY', label:'Orange Money', mono:'OM', color:'#FF6900', text:'#fff' },
+  { id:'MTN_MOMO',     label:'MTN MoMo',     mono:'MM', color:'#FFCC00', text:'#111827' },
 ]
 
 /* ── React Query hooks locais ── */
@@ -70,12 +76,14 @@ function HomeTab({ data, user, school, portalMe }) {
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {[
-          { ico:'📚', val: subjects,          lbl:'Matières',  color:'#1D9E75', bg:'#E1F5EE' },
-          { ico:'📊', val: avg,               lbl:'Moyenne',   color:'#0B1E42', bg:'#E8EEF7' },
-          { ico:'⚠️', val: overdue || '0',    lbl:'Impayés',   color:'#DC2626', bg:'#FEE2E2' },
+          { ico: BookOpen,     val: subjects,       lbl:'Matières',  color:'#1D9E75', bg:'#E1F5EE' },
+          { ico: TrendingUp,   val: avg,             lbl:'Moyenne',   color:'#0B1E42', bg:'#E8EEF7' },
+          { ico: AlertTriangle, val: overdue || '0',  lbl:'Impayés',   color:'#DC2626', bg:'#FEE2E2' },
         ].map((k,i) => (
           <div key={i} className="bg-white rounded-xl border p-4" style={{ borderColor:'#E2EDE8', borderLeft:`3px solid ${k.color}` }}>
-            <div className="text-2xl mb-2">{k.ico}</div>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style={{ background: k.bg }}>
+              <k.ico size={16} style={{ color: k.color }} />
+            </div>
             <div className="font-syne font-extrabold text-2xl text-[#111827]">{k.val}</div>
             <div className="text-[11px] text-[#6B7280] mt-1">{k.lbl}</div>
           </div>
@@ -84,7 +92,7 @@ function HomeTab({ data, user, school, portalMe }) {
 
       {/* Info card */}
       <div className="bg-white rounded-xl border p-5" style={{ borderColor:'#E2EDE8' }}>
-        <div className="font-syne font-bold text-sm text-[#111827] mb-4">👤 Mes informations</div>
+        <div className="font-syne font-bold text-sm text-[#111827] mb-4 flex items-center gap-2"><User size={14} /> Mes informations</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
             { lbl:'Nom complet',       val: portalMe?.fullName      ?? user?.name   ?? '—' },
@@ -155,7 +163,7 @@ function NotesTab({ grades = [] }) {
       {/* Subjects list */}
       {subjects.length === 0 ? (
         <div className="bg-white rounded-xl border p-8 text-center text-[#9CA3AF]" style={{ borderColor:'#E2EDE8' }}>
-          <div className="text-3xl mb-2">📝</div>
+          <PenLine size={28} className="mx-auto mb-2 text-[#D1D5DB]" />
           <p className="text-sm">Aucune note disponible pour ce bimestre</p>
         </div>
       ) : subjects.map((s, i) => {
@@ -234,7 +242,9 @@ function PaymentsTab({ payments, school }) {
                 method === m.id ? 'border-2 shadow-sm' : 'border-[#E2EDE8] hover:border-gray-300'
               }`}
               style={{ borderColor: method === m.id ? m.color : undefined }}>
-              <span>{m.icon}</span>{m.label}
+              <span className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-extrabold flex-shrink-0"
+                    style={{ background: m.color, color: m.text }}>{m.mono}</span>
+              {m.label}
             </button>
           ))}
         </div>
@@ -243,7 +253,7 @@ function PaymentsTab({ payments, school }) {
       {/* Payment list */}
       {payments.length === 0 ? (
         <div className="bg-white rounded-xl border p-8 text-center text-[#9CA3AF]" style={{ borderColor:'#E2EDE8' }}>
-          <div className="text-3xl mb-2">💳</div>
+          <CreditCard size={28} className="mx-auto mb-2 text-[#D1D5DB]" />
           <p className="text-sm">Aucun paiement trouvé</p>
         </div>
       ) : (
@@ -278,21 +288,21 @@ function DocumentsTab({ documents }) {
     <div className="space-y-3">
       {documents.length === 0 ? (
         <div className="bg-white rounded-xl border p-8 text-center text-[#9CA3AF]" style={{ borderColor:'#E2EDE8' }}>
-          <div className="text-3xl mb-2">📄</div>
+          <FileText size={28} className="mx-auto mb-2 text-[#D1D5DB]" />
           <p className="text-sm">Aucun document disponible</p>
         </div>
       ) : documents.map((doc, i) => (
         <a key={doc.id ?? i} href={doc.url ?? '#'} target="_blank" rel="noopener noreferrer"
            className="flex items-center gap-3 bg-white rounded-xl border px-5 py-4 no-underline transition-all hover:border-[#1D9E75] hover:shadow-sm group"
            style={{ borderColor:'#E2EDE8' }}>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{ background:'#E1F5EE' }}>
-            {doc.type === 'BULLETIN' ? '📝' : doc.type === 'RECEIPT' ? '🧾' : '📄'}
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background:'#E1F5EE' }}>
+            {doc.type === 'BULLETIN' ? <PenLine size={17} className="text-[#0F6E56]" /> : doc.type === 'RECEIPT' ? <Receipt size={17} className="text-[#0F6E56]" /> : <FileText size={17} className="text-[#0F6E56]" />}
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-[13px] font-semibold text-[#111827] group-hover:text-[#1D9E75] transition-colors">{doc.name ?? doc.title}</div>
             <div className="text-[11px] text-[#9CA3AF]">{doc.date ?? doc.createdAt?.split('T')[0]}</div>
           </div>
-          <span className="text-[#1D9E75] text-[20px] opacity-0 group-hover:opacity-100 transition-opacity">↓</span>
+          <Download size={16} className="text-[#1D9E75] opacity-0 group-hover:opacity-100 transition-opacity" />
         </a>
       ))}
     </div>
@@ -305,7 +315,7 @@ function MessagesTab({ messages }) {
     <div className="space-y-3">
       {messages.length === 0 ? (
         <div className="bg-white rounded-xl border p-8 text-center text-[#9CA3AF]" style={{ borderColor:'#E2EDE8' }}>
-          <div className="text-3xl mb-2">💬</div>
+          <MessageCircle size={28} className="mx-auto mb-2 text-[#D1D5DB]" />
           <p className="text-sm">Aucun message</p>
         </div>
       ) : messages.map((msg, i) => (
@@ -453,7 +463,7 @@ export default function StudentPortal() {
                   ? 'text-[#1D9E75] border-[#1D9E75] bg-white/5'
                   : 'text-white/45 border-transparent hover:text-white/70 hover:bg-white/5'
               }`}>
-              <span>{tab.icon}</span>
+              <tab.icon size={15} />
               <span className="hidden sm:inline">{tab.label}</span>
               {tab.badge && (
                 <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
@@ -482,7 +492,7 @@ export default function StudentPortal() {
             className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[9px] font-semibold transition-colors relative ${
               activeTab === tab.id ? 'text-[#1D9E75]' : 'text-[#9CA3AF]'
             }`}>
-            <span className="text-lg leading-none">{tab.icon}</span>
+            <tab.icon size={18} />
             <span className="hidden xs:block">{tab.label}</span>
             {tab.badge && (
               <span className="absolute top-1.5 right-[calc(50%-8px)] w-1.5 h-1.5 rounded-full bg-red-400" />

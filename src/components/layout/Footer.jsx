@@ -1,3 +1,4 @@
+import { GraduationCap, Mail, Phone } from 'lucide-react'
 import { useLang } from '../../hooks/useLang'
 
 export default function Footer() {
@@ -16,7 +17,9 @@ export default function Footer() {
         {/* Brand */}
         <div>
           <div className="flex items-center gap-[10px] mb-3">
-            <div className="w-9 h-9 bg-[#1D9E75] rounded-[10px] flex items-center justify-center text-lg">🎓</div>
+            <div className="w-9 h-9 bg-[#1D9E75] rounded-[10px] flex items-center justify-center">
+              <GraduationCap size={18} className="text-white" />
+            </div>
             <span className="font-syne font-extrabold text-xl text-white">Edukira<span className="text-[#1D9E75]">.</span></span>
           </div>
           <p className="text-sm leading-relaxed">{f.tagline}</p>
@@ -40,8 +43,8 @@ export default function Footer() {
         {/* Contact */}
         <div>
           <h3 className="text-white font-syne font-bold text-base mb-4">{f.contactLabel}</h3>
-          <p className="text-sm mb-2">📧 {f.email}</p>
-          <p className="text-sm">📞 {f.phone}</p>
+          <p className="text-sm mb-2 flex items-center gap-2"><Mail size={14} /> {f.email}</p>
+          <p className="text-sm flex items-center gap-2"><Phone size={14} /> {f.phone}</p>
         </div>
       </div>
 

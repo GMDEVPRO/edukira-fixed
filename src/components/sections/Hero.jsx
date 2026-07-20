@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Rocket, Play } from 'lucide-react'
 import { useLang } from '../../hooks/useLang'
+import VideoModal from '../ui/VideoModal'
 
 const AVATARS = [
   { initials: 'AM', color: '#1D9E75' },
@@ -11,6 +14,7 @@ const AVATARS = [
 export default function Hero() {
   const { t, isRTL } = useLang()
   const h = t.hero
+  const [demoOpen, setDemoOpen] = useState(false)
 
   return (
     <section id="hero" className="min-h-[100dvh] relative overflow-hidden flex items-center justify-center">
@@ -58,7 +62,7 @@ export default function Hero() {
               to="/login"
               className="inline-flex items-center gap-2 px-6 py-[11px] bg-[#1D9E75] text-white text-[14px] font-bold rounded-full hover:bg-[#0F6E56] hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(29,158,117,0.4)] transition-all no-underline"
             >
-              {h.cta1}
+              <Rocket size={16} /> {h.cta1}
             </Link>
             <button
               onClick={() => document.querySelector('#features')?.scrollIntoView({ behavior: 'smooth' })}
@@ -67,6 +71,15 @@ export default function Hero() {
               {h.cta2}
             </button>
           </div>
+
+          {/* Assistir à demo — link discreto, abre modal */}
+          <button
+            onClick={() => setDemoOpen(true)}
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#374151] underline decoration-dotted underline-offset-4 hover:text-[#1D9E75] transition-colors bg-transparent border-none cursor-pointer mb-4 animate-fade-up"
+            style={{ animationDelay: '.3s' }}
+          >
+            <Play size={12} /> {h.watchDemo}
+          </button>
 
           {/* Avatar Stack + Social Proof */}
           <div
@@ -125,6 +138,8 @@ export default function Hero() {
 
         </div>
       </div>
+
+      <VideoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
     </section>
   )
 }

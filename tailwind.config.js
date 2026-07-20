@@ -1,21 +1,25 @@
+import { tokens } from './src/styles/tokens.js'
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        green:  { DEFAULT: '#1D9E75', dk: '#0F6E56', lt: '#E1F5EE' },
-        navy:   '#0B1E42',
-        gold:   '#F59E0B',
-        border: '#E5EDE9',
-        off:    '#F8FAF9',
-        muted:  '#6B7280',
+        green:  { DEFAULT: tokens.green, dk: tokens.greenDark, lt: tokens.greenLight },
+        navy:   tokens.navy,
+        gold:   tokens.gold,
+        border: tokens.border,
+        off:    tokens.off,
+        muted:  tokens.muted,
       },
       fontFamily: {
-        syne: ['Syne', 'sans-serif'],
-        dm:   ['DM Sans', 'sans-serif'],
-        sans: ['DM Sans', 'sans-serif'],
-        display: ['Syne', 'sans-serif'],
+        // Tipografia aprovada: Lora (títulos, editorial/confiável) + Space Grotesk (corpo, tech sem ser genérico)
+        serif:   ['Lora', 'serif'],
+        display: ['Lora', 'serif'],
+        syne:    ['Lora', 'serif'],       // alias mantido por compatibilidade — mesmo componentes antigos usando font-syne já pegam a nova tipografia
+        sans:    ['Space Grotesk', 'sans-serif'],
+        dm:      ['Space Grotesk', 'sans-serif'], // idem, alias de compatibilidade
       },
       borderRadius: { xl2: '20px' },
       boxShadow: {

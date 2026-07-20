@@ -6,11 +6,16 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
 } from 'recharts'
+import {
+  LayoutDashboard, GraduationCap, Link2, PenLine, CreditCard, CheckCircle2,
+  MessageCircle, Trophy, ShoppingBag, Banknote, AlertTriangle, Bell, Pin,
+} from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import { useLang } from '../../hooks/useLang'
 import { useDashboard, useStudents, usePayments, useGradesForClasses, useCountryConfig, useGrades, useSaveGrades, usePublishGrades, usePendingStudentAccounts, useReviewStudentAccount } from '../../hooks/useSchoolData'
 import { ErrorBoundary } from '../../components/error/ErrorBoundary'
 import ApiErrorFallback from '../../components/error/ApiErrorFallback'
+import { tokens } from '../../styles/tokens'
 
 /* ── Normaliza respostas da API (array puro, paginação Spring ou wrapper) ── */
 function toArray(data) {
@@ -23,7 +28,7 @@ function toArray(data) {
 
 /* ── Design tokens ── */
 const C = {
-  navy: '#0B1E42', green: '#1D9E75', greenLt: '#E1F5EE',
+  navy: tokens.navy, green: tokens.green, greenLt: tokens.greenLight,
   amber: '#D97706', red: '#DC2626', border: '#E2EDE8', bg: '#F4F7F5',
 }
 const GREENS  = ['#1D9E75','#2ECC9E','#4DD9B8','#7EEBD0','#A8F2E4']
@@ -32,26 +37,28 @@ const DASH_LANGS = ['fr', 'en', 'ar'] // idiomas disponíveis no seletor do dash
 
 /* ── Sidebar nav (ícones + ids fixos, labels traduzidos via d.nav) ── */
 const NAV_ITEMS = [
-  { id:'dash',        ico:'📊' },
-  { id:'students',    ico:'👨‍🎓' },
-  { id:'accounts',    ico:'🔗' },
-  { id:'grades',      ico:'📝' },
-  { id:'payments',    ico:'💳' },
-  { id:'attendance',  ico:'✅' },
-  { id:'messages',    ico:'💬', badge:'4' },
-  { id:'ranking',     ico:'🏆' },
-  { id:'marketplace', ico:'🛍️' },
+  { id:'dash',        ico: LayoutDashboard },
+  { id:'students',    ico: GraduationCap },
+  { id:'accounts',    ico: Link2 },
+  { id:'grades',      ico: PenLine },
+  { id:'payments',    ico: CreditCard },
+  { id:'attendance',  ico: CheckCircle2 },
+  { id:'messages',    ico: MessageCircle, badge:'4' },
+  { id:'ranking',     ico: Trophy },
+  { id:'marketplace', ico: ShoppingBag },
 ]
 
 /* ── Reusable components ── */
-function KpiCard({ ico, val, lbl, delta, up, color, bg, loading }) {
+function KpiCard({ ico: Ico, val, lbl, delta, up, color, bg, loading }) {
   return (
     <div className="bg-white rounded-xl border overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all"
          style={{ borderColor: C.border }}>
       <div className="h-1 rounded-t-xl" style={{ background: color }} />
       <div className="p-4">
         <div className="flex justify-between items-start mb-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ background: bg }}>{ico}</div>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: bg }}>
+            {Ico && <Ico size={19} style={{ color }} strokeWidth={2.2} />}
+          </div>
           {delta && !loading && (
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${up ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
               {delta}
@@ -225,7 +232,7 @@ function DashScreen({ d, currency }) {
      (DashboardController/Service), não neste arquivo.                    */
   const kpis = [
     {
-      ico:'👨‍🎓',
+      ico: GraduationCap,
       val: dash?.schoolStats?.totalStudents ?? dash?.schoolStats?.activeStudents,
       lbl: d.kpi.activeStudents,
       delta: dash?.schoolStats?.pendingApprovals
@@ -234,7 +241,7 @@ function DashScreen({ d, currency }) {
       up:true, color:C.green, bg:'#E1F5EE',
     },
     {
-      ico:'💰',
+      ico: Banknote,
       val: dash?.financialStats?.monthlyRevenue != null
              ? `${(dash.financialStats.monthlyRevenue/1000000).toFixed(1)}M`
              : '—',
@@ -245,7 +252,7 @@ function DashScreen({ d, currency }) {
       up:true, color:C.navy, bg:'#E8EEF7',
     },
     {
-      ico:'📝',
+      ico: PenLine,
       val: dash?.academicStats?.averageGrade?.toFixed(1) ?? '—',
       lbl: d.kpi.avgGrade,
       delta: dash?.academicStats?.passRate != null
@@ -254,7 +261,7 @@ function DashScreen({ d, currency }) {
       up:true, color:C.amber, bg:'#FEF3C7',
     },
     {
-      ico:'⚠️',
+      ico: AlertTriangle,
       val: dash?.financialStats?.overdueCount ?? '—',
       lbl: d.kpi.overdueCount,
       delta: dash?.financialStats?.overdueAmount != null
@@ -266,21 +273,21 @@ function DashScreen({ d, currency }) {
 
   /* Map recentActivities[].{ type, description, time } to display format */
   const recentActivity = (dash?.recentActivities ?? []).map(a => ({
-    icon:   a.type === 'PAYMENT'    ? '💳'
-          : a.type === 'ENROLLMENT' ? '👨‍🎓'
-          : a.type === 'GRADE'      ? '📝'
-          : a.type === 'ATTENDANCE' ? '✅'
-          : '📌',
+    icon:   a.type === 'PAYMENT'    ? CreditCard
+          : a.type === 'ENROLLMENT' ? GraduationCap
+          : a.type === 'GRADE'      ? PenLine
+          : a.type === 'ATTENDANCE' ? CheckCircle2
+          : Pin,
     name:   a.description ?? '',
     action: '',
     time:   a.time ?? '',
   }))
 
   const quickActionsList = [
-    { ico:'👨‍🎓', t:d.quickActions.addStudent,  s:d.quickActions.addStudentSub,  path:'/student' },
-    { ico:'📝',   t:d.quickActions.enterGrades, s:d.quickActions.enterGradesSub, path:'/dashboard' },
-    { ico:'💳',   t:d.quickActions.wavePayment, s:d.quickActions.wavePaymentSub, path:'/dashboard' },
-    { ico:'💬',   t:d.quickActions.broadcastSms,s:d.quickActions.broadcastSmsSub,path:'/dashboard' },
+    { ico: GraduationCap, t:d.quickActions.addStudent,  s:d.quickActions.addStudentSub,  path:'/student' },
+    { ico: PenLine,       t:d.quickActions.enterGrades, s:d.quickActions.enterGradesSub, path:'/dashboard' },
+    { ico: CreditCard,    t:d.quickActions.wavePayment, s:d.quickActions.wavePaymentSub, path:'/dashboard' },
+    { ico: MessageCircle, t:d.quickActions.broadcastSms,s:d.quickActions.broadcastSmsSub,path:'/dashboard' },
   ]
 
   return (
@@ -435,11 +442,13 @@ function DashScreen({ d, currency }) {
             <div className="py-8 text-center text-[#9CA3AF] text-sm">{d.activity.empty}</div>
           ) : (
             <div className="divide-y" style={{ borderColor: C.border }}>
-              {recentActivity.slice(0,5).map((a, i) => (
+              {recentActivity.slice(0,5).map((a, i) => {
+                const AIcon = a.icon ?? Pin
+                return (
                 <div key={i} className="flex items-start gap-3 py-2.5">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 text-base"
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
                        style={{ background:'#E1F5EE' }}>
-                    {a.icon ?? '📌'}
+                    <AIcon size={15} style={{ color: C.green }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[12px] text-[#374151]">
@@ -448,7 +457,7 @@ function DashScreen({ d, currency }) {
                     <div className="text-[10px] text-[#9CA3AF] mt-0.5">{d.activity.timeAgo(a.time ?? a.timestamp)}</div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </CardShell>
@@ -460,7 +469,7 @@ function DashScreen({ d, currency }) {
               <Link key={i} to={q.path}
                 className="flex items-center gap-2.5 p-3 rounded-xl border transition-all hover:border-[#1D9E75] hover:bg-[#E1F5EE] no-underline group"
                 style={{ borderColor:C.border, background:'#F4F7F5' }}>
-                <span className="text-xl">{q.ico}</span>
+                <q.ico size={19} style={{ color: C.green }} className="flex-shrink-0" />
                 <div>
                   <div className="text-[12px] font-bold text-[#111827] group-hover:text-[#0F6E56]">{q.t}</div>
                   <div className="text-[10px] text-[#6B7280]">{q.s}</div>
@@ -971,9 +980,7 @@ export default function Dashboard() {
       {/* ── Sidebar ── */}
       <aside className="hidden lg:flex flex-col w-[220px] flex-shrink-0" style={{ background:C.navy }}>
         <div className="flex items-center gap-2.5 px-4 py-4 border-b border-white/10">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center font-syne font-bold text-white text-sm flex-shrink-0"
-               style={{ background:C.green }}>E</div>
-          <span className="font-syne font-bold text-white text-lg">Edukira</span>
+          <span className="font-syne font-bold text-white text-lg">Edukira<span style={{ color: C.green }}>.</span></span>
         </div>
 
         {school && (
@@ -996,7 +1003,7 @@ export default function Dashboard() {
               {active === item.id && (
                 <div className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r-full" style={{ background:C.green }} />
               )}
-              <span className="text-sm">{item.ico}</span>
+              <item.ico size={16} className="flex-shrink-0" />
               <span className="flex-1">{item.label}</span>
               {item.badge && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
@@ -1049,7 +1056,7 @@ export default function Dashboard() {
             </div>
             <div className="relative w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer border"
                  style={{ background:'#F4F7F5', borderColor:C.border }}>
-              🔔
+              <Bell size={15} className="text-[#374151]" />
               <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500 border border-white" />
             </div>
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold"
@@ -1076,7 +1083,7 @@ export default function Dashboard() {
               active === item.id ? '' : 'text-[#9CA3AF]'
             }`}
             style={{ color: active === item.id ? C.green : undefined }}>
-            <span className="text-lg">{item.ico}</span>
+            <item.ico size={19} />
             {item.label}
           </button>
         ))}

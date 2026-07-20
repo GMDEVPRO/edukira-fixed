@@ -79,11 +79,10 @@ export default function Login() {
     <div className="min-h-screen flex" style={{background:'#f0faf5'}}>
       <div className="hidden lg:flex flex-1 flex-col justify-center px-16 py-12">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[#1D9E75] flex items-center justify-center text-white font-bold text-lg">E</div>
-          <span className="text-white font-bold text-xl">Edukira<span className="text-[#1D9E75]">.</span></span>
+          <span className="text-[#0B1E42] font-bold text-xl">Edukira<span className="text-[#1D9E75]">.</span></span>
         </div>
-        <h1 className="text-white font-extrabold text-4xl leading-tight mb-4">Votre école<br/>digitalisée.<br/><span className="text-[#1D9E75]">Zéro papier. Zéro stress.</span></h1>
-        <p className="text-white/60 text-sm">Élèves, notes, présences et paiements dans une seule plateforme.</p>
+        <h1 className="text-[#0B1E42] font-extrabold text-4xl leading-tight mb-4">Votre école<br/>digitalisée.<br/><span className="text-[#1D9E75]">Zéro papier. Zéro stress.</span></h1>
+        <p className="text-[#4B5563] text-sm">Élèves, notes, présences et paiements dans une seule plateforme.</p>
       </div>
       <div className="flex-1 flex items-center justify-center px-6 py-12" style={{background:'#0f172a'}}>
         <div className="w-full max-w-md">
