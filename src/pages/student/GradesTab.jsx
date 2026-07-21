@@ -1,4 +1,9 @@
 import { useState, useEffect } from 'react'
+import {
+  Download, BarChart3, Zap, Lock, Loader2, PenLine, Save, Search,
+  Star, CheckCircle2, Minus, AlertTriangle, TrendingUp, Users, BookOpen,
+  Pencil, MessageCircle,
+} from 'lucide-react'
 import api from '../../../api/axios'
 import toast from 'react-hot-toast'
 
@@ -9,19 +14,19 @@ const TRANSLATIONS = {
   fr: {
     title: 'Gestion des Notes',
     currentMonth: 'Mars 2026',
-    export: '📥 Exporter',
+    export: 'Exporter',
     newGrade: '+ Nouvelle note',
     averageCollected: 'Moyenne générale',
     topStudents: 'Meilleurs élèves',
     excellentGrades: 'Notes excellentes',
     totalGrades: 'Total notes',
-    gradeDistribution: '📊 Distribution des notes',
+    gradeDistribution: 'Distribution des notes',
     grades: 'notes',
-    quickGrade: '⚡ Ajouter une note',
+    quickGrade: 'Ajouter une note',
     studentNameOrId: 'Nom ou ID de l\'élève...',
     subjectLabel: 'Matière',
     grade: 'Note',
-    addGrade: '🔐 Ajouter la note',
+    addGrade: 'Ajouter la note',
     search: 'Rechercher...',
     allSubjects: 'Toutes matières',
     all: 'Tous',
@@ -35,11 +40,11 @@ const TRANSLATIONS = {
     subjectColumn: 'Matière',
     date: 'Date',
     actions: 'Actions',
-    loading: '⏳ Chargement...',
+    loading: 'Chargement...',
     noResults: 'Aucun résultat',
     displaying: 'Affichage',
     of: 'sur',
-    newGradeModal: '📝 Nouvelle note',
+    newGradeModal: 'Nouvelle note',
     studentField: 'Élève',
     studentPlaceholder: 'Nom ou ID',
     gradeField: 'Note',
@@ -49,7 +54,7 @@ const TRANSLATIONS = {
     noteField: 'Remarque',
     notePlaceholder: 'Ex: Excellent travail...',
     cancel: 'Annuler',
-    save: '💾 Enregistrer',
+    save: 'Enregistrer',
     fillAllFields: 'Remplissez tous les champs',
     fillRequiredFields: 'Remplissez les champs obligatoires',
     gradeAdded: 'Note de {grade} en {subject} ajoutée!',
@@ -57,27 +62,27 @@ const TRANSLATIONS = {
     errorAdding: 'Erreur lors de l\'ajout de la note',
     errorSaving: 'Erreur lors de l\'enregistrement',
     errorLoading: 'Erreur lors du chargement des notes',
-    statusExcellent: '⭐ Excellent',
-    statusGood: '✓ Bon',
-    statusAverage: '○ Moyen',
-    statusPoor: '✗ Faible',
+    statusExcellent: 'Excellent',
+    statusGood: 'Bon',
+    statusAverage: 'Moyen',
+    statusPoor: 'Faible',
   },
   en: {
     title: 'Grade Management',
     currentMonth: 'March 2026',
-    export: '📥 Export',
+    export: 'Export',
     newGrade: '+ New Grade',
     averageCollected: 'General Average',
     topStudents: 'Top Students',
     excellentGrades: 'Excellent Grades',
     totalGrades: 'Total Grades',
-    gradeDistribution: '📊 Grade Distribution',
+    gradeDistribution: 'Grade Distribution',
     grades: 'grades',
-    quickGrade: '⚡ Add Grade',
+    quickGrade: 'Add Grade',
     studentNameOrId: 'Student Name or ID...',
     subjectLabel: 'Subject',
     grade: 'Grade',
-    addGrade: '🔐 Add Grade',
+    addGrade: 'Add Grade',
     search: 'Search...',
     allSubjects: 'All Subjects',
     all: 'All',
@@ -91,11 +96,11 @@ const TRANSLATIONS = {
     subjectColumn: 'Subject',
     date: 'Date',
     actions: 'Actions',
-    loading: '⏳ Loading...',
+    loading: 'Loading...',
     noResults: 'No results',
     displaying: 'Displaying',
     of: 'of',
-    newGradeModal: '📝 New Grade',
+    newGradeModal: 'New Grade',
     studentField: 'Student',
     studentPlaceholder: 'Name or ID',
     gradeField: 'Grade',
@@ -105,7 +110,7 @@ const TRANSLATIONS = {
     noteField: 'Note',
     notePlaceholder: 'Ex: Excellent work...',
     cancel: 'Cancel',
-    save: '💾 Save',
+    save: 'Save',
     fillAllFields: 'Fill in all fields',
     fillRequiredFields: 'Fill in required fields',
     gradeAdded: 'Grade of {grade} in {subject} added!',
@@ -113,27 +118,27 @@ const TRANSLATIONS = {
     errorAdding: 'Error adding grade',
     errorSaving: 'Error saving grade',
     errorLoading: 'Error loading grades',
-    statusExcellent: '⭐ Excellent',
-    statusGood: '✓ Good',
-    statusAverage: '○ Average',
-    statusPoor: '✗ Poor',
+    statusExcellent: 'Excellent',
+    statusGood: 'Good',
+    statusAverage: 'Average',
+    statusPoor: 'Poor',
   },
   ar: {
     title: 'إدارة الدرجات',
     currentMonth: 'مارس 2026',
-    export: '📥 تصدير',
+    export: 'تصدير',
     newGrade: '+ درجة جديدة',
     averageCollected: 'المتوسط العام',
     topStudents: 'أفضل الطلاب',
     excellentGrades: 'درجات ممتازة',
     totalGrades: 'إجمالي الدرجات',
-    gradeDistribution: '📊 توزيع الدرجات',
+    gradeDistribution: 'توزيع الدرجات',
     grades: 'درجات',
-    quickGrade: '⚡ إضافة درجة',
+    quickGrade: 'إضافة درجة',
     studentNameOrId: 'اسم الطالب أو الرقم...',
     subjectLabel: 'المادة',
     grade: 'الدرجة',
-    addGrade: '🔐 إضافة الدرجة',
+    addGrade: 'إضافة الدرجة',
     search: 'بحث...',
     allSubjects: 'جميع المواد',
     all: 'الكل',
@@ -147,11 +152,11 @@ const TRANSLATIONS = {
     subjectColumn: 'المادة',
     date: 'التاريخ',
     actions: 'الإجراءات',
-    loading: '⏳ جاري التحميل...',
+    loading: 'جاري التحميل...',
     noResults: 'لا توجد نتائج',
     displaying: 'عرض',
     of: 'من',
-    newGradeModal: '📝 درجة جديدة',
+    newGradeModal: 'درجة جديدة',
     studentField: 'الطالب',
     studentPlaceholder: 'الاسم أو الرقم',
     gradeField: 'الدرجة',
@@ -161,7 +166,7 @@ const TRANSLATIONS = {
     noteField: 'ملاحظة',
     notePlaceholder: 'مثال: عمل ممتاز...',
     cancel: 'إلغاء',
-    save: '💾 حفظ',
+    save: 'حفظ',
     fillAllFields: 'ملء جميع الحقول',
     fillRequiredFields: 'ملء الحقول المطلوبة',
     gradeAdded: 'تمت إضافة درجة {grade} في {subject}!',
@@ -169,10 +174,10 @@ const TRANSLATIONS = {
     errorAdding: 'خطأ في إضافة الدرجة',
     errorSaving: 'خطأ في حفظ الدرجة',
     errorLoading: 'خطأ في تحميل الدرجات',
-    statusExcellent: '⭐ ممتاز',
-    statusGood: '✓ جيد',
-    statusAverage: '○ متوسط',
-    statusPoor: '✗ ضعيف',
+    statusExcellent: 'ممتاز',
+    statusGood: 'جيد',
+    statusAverage: 'متوسط',
+    statusPoor: 'ضعيف',
   }
 }
 
@@ -291,16 +296,16 @@ export default function GradesTab({ schoolId, language = 'fr' }) {
   const statusBadge = (grade) => {
     const status = getGradeStatus(grade)
     const map = {
-      excellent: { label: t.statusExcellent },
-      good: { label: t.statusGood },
-      average: { label: t.statusAverage },
-      poor: { label: t.statusPoor },
+      excellent: { label: t.statusExcellent, Icon: Star },
+      good:      { label: t.statusGood,      Icon: CheckCircle2 },
+      average:   { label: t.statusAverage,   Icon: Minus },
+      poor:      { label: t.statusPoor,      Icon: AlertTriangle },
     }
     const colors = getGradeColor(grade)
     const s = map[status] || map.average
     return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: colors.bg, color: colors.color }}>
-        {s.label}
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: colors.bg, color: colors.color }}>
+        <s.Icon size={11} />{s.label}
       </span>
     )
   }
@@ -344,7 +349,7 @@ export default function GradesTab({ schoolId, language = 'fr' }) {
           <div style={{ fontSize: 13, color: '#6B7280', marginTop: 3 }}>{t.currentMonth}</div>
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button onClick={() => toast.success('Export en cours...')} style={{ ...styles.btn, ...styles.btnOutline }}>{t.export}</button>
+          <button onClick={() => toast.success('Export en cours...')} style={{ ...styles.btn, ...styles.btnOutline }}><Download size={13} style={{ marginRight: 5, verticalAlign: -2 }} />{t.export}</button>
           <button onClick={() => setShowModal(true)} style={{ ...styles.btn, ...styles.btnGreen }}>{t.newGrade}</button>
         </div>
       </div>
@@ -352,13 +357,13 @@ export default function GradesTab({ schoolId, language = 'fr' }) {
       {/* ── Stats ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 20 }}>
         {[
-          { icon: '📊', val: avgGrade, lbl: t.averageCollected, bg: '#E1F5EE', color: '#059669' },
-          { icon: '⭐', val: grades.filter(g => getGradeStatus(g.grade) === 'excellent').length, lbl: t.excellentGrades, bg: '#E3F2FD', color: '#2563EB' },
-          { icon: '👥', val: [...new Set(grades.map(g => g.studentName))].length, lbl: t.topStudents, bg: '#FFF7ED', color: '#D97706' },
-          { icon: '📈', val: grades.length, lbl: t.totalGrades, bg: '#F0FDF9', color: '#111827' },
+          { icon: TrendingUp, val: avgGrade, lbl: t.averageCollected, bg: '#E1F5EE', color: '#059669' },
+          { icon: Star, val: grades.filter(g => getGradeStatus(g.grade) === 'excellent').length, lbl: t.excellentGrades, bg: '#E3F2FD', color: '#2563EB' },
+          { icon: Users, val: [...new Set(grades.map(g => g.studentName))].length, lbl: t.topStudents, bg: '#FFF7ED', color: '#D97706' },
+          { icon: BarChart3, val: grades.length, lbl: t.totalGrades, bg: '#F0FDF9', color: '#111827' },
         ].map((s, i) => (
           <div key={i} style={styles.statCard}>
-            <div style={{ ...styles.statIcon, background: s.bg }}>{s.icon}</div>
+            <div style={{ ...styles.statIcon, background: s.bg }}><s.icon size={18} style={{ color: s.color }} /></div>
             <div>
               <div style={{ ...styles.statVal, color: s.color }}>{s.val}</div>
               <div style={styles.statLbl}>{s.lbl}</div>
@@ -371,14 +376,14 @@ export default function GradesTab({ schoolId, language = 'fr' }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 16 }}>
         {/* Subjects */}
         <div style={styles.card}>
-          <div style={styles.cardTitle}>{t.gradeDistribution}</div>
+          <div style={styles.cardTitle}><BarChart3 size={13} style={{ marginRight: 5, verticalAlign: -2 }} />{t.gradeDistribution}</div>
           {subjects.map(subj => {
             const subjectGrades = grades.filter(g => g.subject === subj)
             const avg = subjectGrades.length ? (subjectGrades.reduce((a, g) => a + parseFloat(g.grade || 0), 0) / subjectGrades.length).toFixed(1) : 0
             const colors = getGradeColor(avg)
             return (
               <div key={subj} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 10, border: '1px solid #E2EDE8', marginBottom: 8 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: colors.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>📚</div>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: colors.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><BookOpen size={18} style={{ color: colors.color }} /></div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>{subj}</div>
                   <div style={{ fontSize: 11, color: '#6B7280' }}>{subjectGrades.length} {t.grades} · Moy: {avg}</div>
@@ -394,12 +399,12 @@ export default function GradesTab({ schoolId, language = 'fr' }) {
 
         {/* Quick Grade */}
         <div style={{ background: '#0B1E42', borderRadius: 14, padding: 20, color: '#fff' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>{t.quickGrade}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}><Zap size={14} style={{ marginRight: 5, verticalAlign: -2 }} />{t.quickGrade}</div>
           <input style={darkInputStyle} placeholder={t.studentNameOrId} value={quickForm.student} onChange={e => setQuickForm(f => ({ ...f, student: e.target.value }))} />
           <input style={darkInputStyle} placeholder={t.subjectPlaceholder} value={quickForm.subject} onChange={e => setQuickForm(f => ({ ...f, subject: e.target.value }))} />
           <input style={darkInputStyle} type="number" placeholder={t.gradePlaceholder} min="0" max="20" value={quickForm.grade} onChange={e => setQuickForm(f => ({ ...f, grade: e.target.value }))} />
           <button onClick={handleAddGrade} style={{ width: '100%', padding: 12, borderRadius: 10, border: 'none', background: '#1D9E75', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
-            {t.addGrade}
+            <Lock size={13} style={{ marginRight: 6, verticalAlign: -2 }} />{t.addGrade}
           </button>
         </div>
       </div>
@@ -407,7 +412,7 @@ export default function GradesTab({ schoolId, language = 'fr' }) {
       {/* ── Filters ── */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 15 }}>🔍</span>
+          <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
           <input type="text" placeholder={t.search} value={search} onChange={e => setSearch(e.target.value)}
             style={{ ...inputStyle, paddingLeft: 38 }} />
         </div>
@@ -430,7 +435,7 @@ export default function GradesTab({ schoolId, language = 'fr' }) {
         </div>
 
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>{t.loading}</div>
+          <div style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}><Loader2 size={16} className="inline animate-spin" style={{ marginRight: 6, verticalAlign: -3 }} />{t.loading}</div>
         ) : paginated.length === 0 ? (
           <div style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>{t.noResults}</div>
         ) : (
@@ -449,8 +454,8 @@ export default function GradesTab({ schoolId, language = 'fr' }) {
                 <div style={{ fontSize: 13, fontWeight: 600 }}>{g.subject}</div>
                 <div style={{ fontSize: 13, color: '#374151' }}>{g.date || '—'}</div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <button style={styles.actionBtn}>✏️</button>
-                  <button style={styles.actionBtn}>💬</button>
+                  <button style={styles.actionBtn}><Pencil size={13} /></button>
+                  <button style={styles.actionBtn}><MessageCircle size={13} /></button>
                 </div>
               </div>
             )
@@ -476,7 +481,7 @@ export default function GradesTab({ schoolId, language = 'fr' }) {
       {showModal && (
         <div style={styles.modalOverlay} onClick={e => e.target === e.currentTarget && setShowModal(false)}>
           <div style={{ ...styles.modal, direction: language === 'ar' ? 'rtl' : 'ltr' }}>
-            <div style={styles.modalTitle}>{t.newGradeModal}</div>
+            <div style={styles.modalTitle}><PenLine size={15} style={{ marginRight: 6, verticalAlign: -2 }} />{t.newGradeModal}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {[
                 { label: t.studentField, key: 'studentName', placeholder: t.studentPlaceholder },
@@ -493,7 +498,7 @@ export default function GradesTab({ schoolId, language = 'fr' }) {
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button style={styles.btnCancel} onClick={() => setShowModal(false)}>{t.cancel}</button>
-              <button style={styles.btnSave} onClick={handleSave}>{t.save}</button>
+              <button style={styles.btnSave} onClick={handleSave}><Save size={13} style={{ marginRight: 5, verticalAlign: -2 }} />{t.save}</button>
             </div>
           </div>
         </div>

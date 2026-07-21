@@ -1,5 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import {
+  AlertCircle, IdCard, Lock, GraduationCap, Users, Rocket, Loader2,
+  CheckCircle2, Lightbulb, Globe, Smartphone, LogIn,
+} from 'lucide-react'
 import { useLang } from '../hooks/useLang'
 import api from '../api/axios'
 import useAuthStore from '../store/authStore'
@@ -60,7 +64,7 @@ const Label = ({ children, required }) => (
 )
 
 const FieldError = ({ msg }) =>
-  msg ? <p className="text-red-500 text-[10px] mt-1 flex items-center gap-1">⚠ {msg}</p> : null
+  msg ? <p className="text-red-500 text-[10px] mt-1 flex items-center gap-1"><AlertCircle size={11} />{msg}</p> : null
 
 const Input = ({ value, onChange, error, ...props }) => (
   <input
@@ -88,11 +92,11 @@ const Select = ({ value, onChange, error, children, ...props }) => (
   </select>
 )
 
-const SectionTitle = ({ children, color = '#1D9E75', emoji }) => (
+const SectionTitle = ({ children, color = '#1D9E75', icon: Icon }) => (
   <div className="flex items-center gap-2 py-2 border-b border-[#E5E7EB] mb-4">
     <div className="w-1 h-4 rounded-full" style={{ background: color }} />
-    <span className="text-[.72rem] font-bold uppercase tracking-[.1em]" style={{ color }}>
-      {emoji && <span className="mr-1">{emoji}</span>}{children}
+    <span className="text-[.72rem] font-bold uppercase tracking-[.1em] flex items-center gap-1.5" style={{ color }}>
+      {Icon && <Icon size={13} />}{children}
     </span>
   </div>
 )
@@ -101,7 +105,7 @@ const SectionTitle = ({ children, color = '#1D9E75', emoji }) => (
 const IDField = ({ label, typeVal, typeChange, typeError, numVal, numChange, numError }) => (
   <div className="rounded-xl p-4 space-y-3 border-2 border-[#1D9E75]/30 bg-[#F0FDF9]">
     <div className="flex items-center gap-2">
-      <span>🪪</span>
+      <IdCard size={14} className="text-[#1D9E75]" />
       <span className="text-[.72rem] font-bold text-[#1D9E75] uppercase tracking-[.1em]">{label}</span>
       <span className="ml-auto text-[9px] font-bold bg-[#1D9E75] text-white px-2 py-0.5 rounded-full">Requis / Obrigatório</span>
     </div>
@@ -127,7 +131,7 @@ const IDField = ({ label, typeVal, typeChange, typeError, numVal, numChange, num
 /* ── Success screen ── */
 const SuccessScreen = ({ back }) => (
   <div className="text-center py-12 px-6">
-    <div className="w-16 h-16 rounded-full bg-[#E1F5EE] flex items-center justify-center mx-auto mb-4 text-3xl">✅</div>
+    <div className="w-16 h-16 rounded-full bg-[#E1F5EE] flex items-center justify-center mx-auto mb-4"><CheckCircle2 size={30} className="text-[#1D9E75]" /></div>
     <h3 className="font-syne font-bold text-xl text-[#111827] mb-2">Compte créé avec succès !</h3>
     <p className="text-[.9rem] text-[#6B7280] mb-6 max-w-xs mx-auto">
       En attente d'approbation. Vous recevrez une confirmation par SMS/email.
@@ -190,7 +194,7 @@ function StudentForm() {
       </div>
 
       <div>
-        <SectionTitle emoji="👨‍🎓">Informations personnelles</SectionTitle>
+        <SectionTitle icon={GraduationCap}>Informations personnelles</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div><Label required>Prénom / Nome</Label><Input value={f.firstName} onChange={upd('firstName')} error={errs.firstName} /><FieldError msg={errs.firstName} /></div>
           <div><Label required>Nom / Apelido</Label><Input value={f.lastName} onChange={upd('lastName')} error={errs.lastName} /><FieldError msg={errs.lastName} /></div>
@@ -217,7 +221,7 @@ function StudentForm() {
       </div>
 
       <div>
-        <SectionTitle emoji="🪪" color="#1D9E75">Identité de l'élève</SectionTitle>
+        <SectionTitle icon={IdCard} color="#1D9E75">Identité de l'élève</SectionTitle>
         <IDField
           label="Numéro d'identité de l'élève"
           typeVal={f.docType}    typeChange={upd('docType')}    typeError={errs.docType}
@@ -227,20 +231,20 @@ function StudentForm() {
       </div>
 
       <div>
-        <SectionTitle emoji="🔐">Sécurité / Segurança</SectionTitle>
+        <SectionTitle icon={Lock}>Sécurité / Segurança</SectionTitle>
         <Label required>Mot de passe / Senha</Label>
         <Input value={f.password} onChange={upd('password')} error={errs.password} type="password" placeholder="Minimum 8 caractères" />
         <FieldError msg={errs.password} />
       </div>
 
       {errs.api && (
-        <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-[.8rem]">⚠️ {errs.api}</div>
+        <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-[.8rem] flex items-center gap-2"><AlertCircle size={14} className="flex-shrink-0" /> {errs.api}</div>
       )}
 
       <button onClick={submit} disabled={status === 'sending'}
         className="w-full py-3.5 rounded-xl text-white font-bold text-[.95rem] transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
         style={{ background:'#1D9E75' }}>
-        {status === 'sending' ? '⏳ Création en cours...' : '🚀 Créer mon compte élève'}
+        {status === 'sending' ? (<><Loader2 size={15} className="inline animate-spin -mt-0.5 mr-1.5" />Création en cours...</>) : (<><Rocket size={15} className="inline -mt-0.5 mr-1.5" />Créer mon compte élève</>)}
       </button>
     </div>
   )
@@ -307,7 +311,7 @@ function TutorForm() {
 
       {/* ── TUTOR ── */}
       <div>
-        <SectionTitle emoji="👪" color="#0B1E42">Informations du tuteur / parent</SectionTitle>
+        <SectionTitle icon={Users} color="#0B1E42">Informations du tuteur / parent</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div><Label required>Prénom / Nome</Label><Input value={f.tutorFirstName} onChange={upd('tutorFirstName')} error={errs.tutorFirstName} /><FieldError msg={errs.tutorFirstName} /></div>
           <div><Label required>Nom / Apelido</Label><Input value={f.tutorLastName} onChange={upd('tutorLastName')} error={errs.tutorLastName} /><FieldError msg={errs.tutorLastName} /></div>
@@ -339,7 +343,7 @@ function TutorForm() {
 
       {/* ── CHILD ── */}
       <div>
-        <SectionTitle emoji="👨‍🎓">Informations de l'élève</SectionTitle>
+        <SectionTitle icon={GraduationCap}>Informations de l'élève</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div><Label required>Prénom élève</Label><Input value={f.childFirstName} onChange={upd('childFirstName')} error={errs.childFirstName} /><FieldError msg={errs.childFirstName} /></div>
           <div><Label>Nom élève</Label><Input value={f.childLastName} onChange={upd('childLastName')} /></div>
@@ -366,13 +370,13 @@ function TutorForm() {
       </div>
 
       {errs.api && (
-        <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-[.8rem]">⚠️ {errs.api}</div>
+        <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-[.8rem] flex items-center gap-2"><AlertCircle size={14} className="flex-shrink-0" /> {errs.api}</div>
       )}
 
       <button onClick={submit} disabled={status === 'sending'}
         className="w-full py-3.5 rounded-xl text-white font-bold text-[.95rem] transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
         style={{ background:'#0B1E42' }}>
-        {status === 'sending' ? '⏳ Création en cours...' : '🚀 Créer le compte tuteur + élève'}
+        {status === 'sending' ? (<><Loader2 size={15} className="inline animate-spin -mt-0.5 mr-1.5" />Création en cours...</>) : (<><Rocket size={15} className="inline -mt-0.5 mr-1.5" />Créer le compte tuteur + élève</>)}
       </button>
     </div>
   )
@@ -400,7 +404,7 @@ export default function StudentRegisterPage() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4 text-xs font-bold uppercase tracking-wide"
                  style={{ background:'#E1F5EE', color:'#1D9E75', border:'1px solid rgba(29,158,117,0.25)' }}>
-              🎓 Espace Élève / Tutor
+              <GraduationCap size={13} /> Espace Élève / Tutor
             </div>
             <h1 className="font-syne font-extrabold text-[1.9rem] text-[#111827] mb-2">
               {mode === 'register' ? 'Créer votre compte' : 'Se connecter'}
@@ -419,12 +423,15 @@ export default function StudentRegisterPage() {
               <>
                 {/* Tabs */}
                 <div className="flex border-b border-[#E5E7EB]">
-                  {[['student', s.tab1 ?? '👨‍🎓 Je suis élève'], ['tutor', s.tab2 ?? '👪 Je suis parent / tuteur']].map(([val, label]) => (
+                  {[
+                    ['student', GraduationCap, s.tab1 ?? 'Je suis élève'],
+                    ['tutor',   Users,          s.tab2 ?? 'Je suis parent / tuteur'],
+                  ].map(([val, Icon, label]) => (
                     <button key={val} onClick={() => setTab(val)}
-                      className={`flex-1 py-4 text-[.875rem] font-bold transition-all border-b-2 ${
+                      className={`flex-1 py-4 text-[.875rem] font-bold transition-all border-b-2 flex items-center justify-center gap-2 ${
                         tab === val ? 'border-[#1D9E75] text-[#1D9E75] bg-[#F0FDF8]' : 'border-transparent text-[#6B7280] hover:text-[#1D9E75]'
                       }`}>
-                      {label}
+                      <Icon size={15} />{label}
                     </button>
                   ))}
                 </div>
@@ -432,7 +439,7 @@ export default function StudentRegisterPage() {
                 {/* Info notice */}
                 <div className="mx-6 mt-5 p-3 rounded-xl flex items-start gap-2.5 text-[.8rem]"
                      style={{ background:'#FFF7E6', border:'1px solid #FDE68A' }}>
-                  <span className="text-xl flex-shrink-0">💡</span>
+                  <Lightbulb size={18} className="flex-shrink-0 text-[#D97706]" />
                   <div>
                     <strong className="text-[#92400E]">{s.idNotice ? '' : 'Numéro d\'identité requis :'}</strong>
                     <span className="text-[#78350F]">
@@ -458,7 +465,13 @@ export default function StudentRegisterPage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-6 mt-6 text-[.75rem] text-[#9CA3AF]">
-            {['🔒 Données chiffrées SSL','🌍 Multi-pays','📱 Support WhatsApp'].map(b => <span key={b}>{b}</span>)}
+            {[
+              { Icon: Lock,       label: 'Données chiffrées SSL' },
+              { Icon: Globe,      label: 'Multi-pays' },
+              { Icon: Smartphone, label: 'Support WhatsApp' },
+            ].map(b => (
+              <span key={b.label} className="inline-flex items-center gap-1.5"><b.Icon size={12} />{b.label}</span>
+            ))}
           </div>
         </div>
       </div>
@@ -502,14 +515,14 @@ function LoginMode({ onBack }) {
 
   return (
     <div className="p-6 space-y-4">
-      {errs.api && <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-[.8rem]">⚠️ {errs.api}</div>}
+      {errs.api && <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-[.8rem] flex items-center gap-2"><AlertCircle size={14} className="flex-shrink-0" /> {errs.api}</div>}
       <div><Label required>ID de l'école</Label><Input value={f.schoolId} onChange={upd('schoolId')} placeholder="Ex: 97c55f47-71e1-..." /></div>
       <div><Label required>Numéro d'identité</Label><Input value={f.documentNumber} onChange={upd('documentNumber')} placeholder="Ex: 1234567890" /></div>
       <div><Label required>Mot de passe</Label><Input value={f.password} onChange={upd('password')} type="password" placeholder="••••••••" /></div>
       <button onClick={submit} disabled={status==='sending'}
         className="w-full py-3.5 rounded-xl text-white font-bold text-[.95rem] transition-all hover:opacity-90 disabled:opacity-60"
         style={{ background:'#1D9E75' }}>
-        {status==='sending' ? '⏳...' : '🔓 Se connecter'}
+        {status==='sending' ? <Loader2 size={15} className="inline animate-spin" /> : (<><LogIn size={15} className="inline -mt-0.5 mr-1.5" />Se connecter</>)}
       </button>
       <button onClick={onBack} className="w-full text-[.82rem] text-[#6B7280] hover:text-[#1D9E75] bg-transparent border-none cursor-pointer text-center mt-1">
         ← Créer un compte

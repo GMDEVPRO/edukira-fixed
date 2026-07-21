@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react'
+import {
+  Download, PieChart, Zap, Lock, Loader2, CreditCard, Save, Search,
+  CheckCircle2, Clock, AlertTriangle, CircleDashed, Banknote, Receipt,
+  MessageCircle, BarChart3,
+} from 'lucide-react'
 import api from '../../../api/axios'
 import toast from 'react-hot-toast'
 
 const PAGE_SIZE = 10
 
 const METHOD_INFO = {
-  WAVE: { label: 'Wave', icon: '🌊', color: '#1D9E75', bg: '#E1F5EE' },
-  ORANGE_MONEY: { label: 'Orange Money', icon: '🟠', color: '#D97706', bg: '#FFF7ED' },
-  MTN_MOMO: { label: 'MTN MoMo', icon: '🟡', color: '#D97706', bg: '#FFFBEB' },
-  CASH: { label: 'Cash', icon: '💵', color: '#2563EB', bg: '#EFF6FF' },
+  WAVE:         { label: 'Wave',         mono: 'W',  color: '#1D9E75', bg: '#E1F5EE' },
+  ORANGE_MONEY: { label: 'Orange Money', mono: 'OM', color: '#D97706', bg: '#FFF7ED' },
+  MTN_MOMO:     { label: 'MTN MoMo',     mono: 'MM', color: '#D97706', bg: '#FFFBEB' },
+  CASH:         { label: 'Cash',         mono: '$',  color: '#2563EB', bg: '#EFF6FF' },
 }
 
 // Translations
@@ -16,18 +21,18 @@ const TRANSLATIONS = {
   fr: {
     title: 'Gestion des Paiements',
     currentMonth: 'Mars 2026',
-    export: '📥 Exporter',
+    export: 'Exporter',
     newPayment: '+ Nouveau paiement',
     collectedFCFA: 'FCFA collectés',
     lateFCFA: 'FCFA en retard',
     paidStudents: 'Élèves à jour',
     totalTransactions: 'Total transactions',
-    methodDistribution: '📱 Répartition par méthode',
+    methodDistribution: 'Répartition par méthode',
     payments: 'paiements',
-    quickPayment: '⚡ Paiement rapide',
+    quickPayment: 'Paiement rapide',
     studentNameOrId: 'Nom ou ID de l\'élève...',
     amount: 'Montant (FCFA)',
-    initiatePayment: '🔐 Initier le paiement',
+    initiatePayment: 'Initier le paiement',
     search: 'Rechercher...',
     allMethods: 'Toutes méthodes',
     all: 'Tous',
@@ -40,11 +45,11 @@ const TRANSLATIONS = {
     method: 'Méthode',
     date: 'Date',
     actions: 'Actions',
-    loading: '⏳ Chargement...',
+    loading: 'Chargement...',
     noResults: 'Aucun résultat',
     displaying: 'Affichage',
     of: 'sur',
-    newPaymentModal: '💳 Nouveau paiement',
+    newPaymentModal: 'Nouveau paiement',
     studentField: 'Élève',
     studentPlaceholder: 'Nom ou ID',
     amountField: 'Montant (FCFA)',
@@ -54,7 +59,7 @@ const TRANSLATIONS = {
     methodField: 'Méthode',
     periodField: 'Période',
     cancel: 'Annuler',
-    save: '💾 Enregistrer',
+    save: 'Enregistrer',
     fillAllFields: 'Remplissez tous les champs',
     fillRequiredFields: 'Remplissez les champs obligatoires',
     paymentInitiated: 'Paiement {method} de {amount} FCFA initié!',
@@ -62,26 +67,26 @@ const TRANSLATIONS = {
     errorInitiating: 'Erreur lors de l\'initiation du paiement',
     errorSaving: 'Erreur lors de l\'enregistrement',
     errorLoading: 'Erreur lors du chargement des paiements',
-    statusPaid: '✓ Payé',
-    statusPending: '⏳ En attente',
-    statusLate: '✗ Retard',
-    statusPartial: '◑ Partiel',
+    statusPaid: 'Payé',
+    statusPending: 'En attente',
+    statusLate: 'Retard',
+    statusPartial: 'Partiel',
   },
   en: {
     title: 'Payment Management',
     currentMonth: 'March 2026',
-    export: '📥 Export',
+    export: 'Export',
     newPayment: '+ New Payment',
     collectedFCFA: 'FCFA Collected',
     lateFCFA: 'FCFA Late',
     paidStudents: 'Students Up to Date',
     totalTransactions: 'Total Transactions',
-    methodDistribution: '📱 Distribution by Method',
+    methodDistribution: 'Distribution by Method',
     payments: 'payments',
-    quickPayment: '⚡ Quick Payment',
+    quickPayment: 'Quick Payment',
     studentNameOrId: 'Student Name or ID...',
     amount: 'Amount (FCFA)',
-    initiatePayment: '🔐 Initiate Payment',
+    initiatePayment: 'Initiate Payment',
     search: 'Search...',
     allMethods: 'All Methods',
     all: 'All',
@@ -94,11 +99,11 @@ const TRANSLATIONS = {
     method: 'Method',
     date: 'Date',
     actions: 'Actions',
-    loading: '⏳ Loading...',
+    loading: 'Loading...',
     noResults: 'No results',
     displaying: 'Displaying',
     of: 'of',
-    newPaymentModal: '💳 New Payment',
+    newPaymentModal: 'New Payment',
     studentField: 'Student',
     studentPlaceholder: 'Name or ID',
     amountField: 'Amount (FCFA)',
@@ -108,7 +113,7 @@ const TRANSLATIONS = {
     methodField: 'Method',
     periodField: 'Period',
     cancel: 'Cancel',
-    save: '💾 Save',
+    save: 'Save',
     fillAllFields: 'Fill in all fields',
     fillRequiredFields: 'Fill in required fields',
     paymentInitiated: '{method} payment of {amount} FCFA initiated!',
@@ -116,26 +121,26 @@ const TRANSLATIONS = {
     errorInitiating: 'Error initiating payment',
     errorSaving: 'Error saving payment',
     errorLoading: 'Error loading payments',
-    statusPaid: '✓ Paid',
-    statusPending: '⏳ Pending',
-    statusLate: '✗ Late',
-    statusPartial: '◑ Partial',
+    statusPaid: 'Paid',
+    statusPending: 'Pending',
+    statusLate: 'Late',
+    statusPartial: 'Partial',
   },
   ar: {
     title: 'إدارة المدفوعات',
     currentMonth: 'مارس 2026',
-    export: '📥 تصدير',
+    export: 'تصدير',
     newPayment: '+ دفع جديد',
     collectedFCFA: 'فرنك سيفا مجمع',
     lateFCFA: 'فرنك سيفا متأخر',
     paidStudents: 'الطلاب محدثون',
     totalTransactions: 'إجمالي المعاملات',
-    methodDistribution: '📱 التوزيع حسب الطريقة',
+    methodDistribution: 'التوزيع حسب الطريقة',
     payments: 'مدفوعات',
-    quickPayment: '⚡ دفع سريع',
+    quickPayment: 'دفع سريع',
     studentNameOrId: 'اسم الطالب أو الرقم...',
     amount: 'المبلغ (فرنك سيفا)',
-    initiatePayment: '🔐 بدء الدفع',
+    initiatePayment: 'بدء الدفع',
     search: 'بحث...',
     allMethods: 'جميع الطرق',
     all: 'الكل',
@@ -148,11 +153,11 @@ const TRANSLATIONS = {
     method: 'الطريقة',
     date: 'التاريخ',
     actions: 'الإجراءات',
-    loading: '⏳ جاري التحميل...',
+    loading: 'جاري التحميل...',
     noResults: 'لا توجد نتائج',
     displaying: 'عرض',
     of: 'من',
-    newPaymentModal: '💳 دفع جديد',
+    newPaymentModal: 'دفع جديد',
     studentField: 'الطالب',
     studentPlaceholder: 'الاسم أو الرقم',
     amountField: 'المبلغ (فرنك سيفا)',
@@ -162,7 +167,7 @@ const TRANSLATIONS = {
     methodField: 'الطريقة',
     periodField: 'الفترة',
     cancel: 'إلغاء',
-    save: '💾 حفظ',
+    save: 'حفظ',
     fillAllFields: 'ملء جميع الحقول',
     fillRequiredFields: 'ملء الحقول المطلوبة',
     paymentInitiated: 'تم بدء دفع {method} بمبلغ {amount} فرنك سيفا!',
@@ -170,10 +175,10 @@ const TRANSLATIONS = {
     errorInitiating: 'خطأ في بدء الدفع',
     errorSaving: 'خطأ في حفظ الدفع',
     errorLoading: 'خطأ في تحميل المدفوعات',
-    statusPaid: '✓ مدفوع',
-    statusPending: '⏳ قيد الانتظار',
-    statusLate: '✗ متأخر',
-    statusPartial: '◑ جزئي',
+    statusPaid: 'مدفوع',
+    statusPending: 'قيد الانتظار',
+    statusLate: 'متأخر',
+    statusPartial: 'جزئي',
   }
 }
 
@@ -282,15 +287,15 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
 
   const statusBadge = (status) => {
     const map = {
-      PAID: { bg: '#E1F5EE', color: '#0F6E56', label: t.statusPaid },
-      PENDING: { bg: '#FFF7ED', color: '#D97706', label: t.statusPending },
-      LATE: { bg: '#FEF2F2', color: '#DC2626', label: t.statusLate },
-      PARTIAL: { bg: '#EFF6FF', color: '#2563EB', label: t.statusPartial },
+      PAID:    { bg: '#E1F5EE', color: '#0F6E56', label: t.statusPaid,    Icon: CheckCircle2 },
+      PENDING: { bg: '#FFF7ED', color: '#D97706', label: t.statusPending, Icon: Clock },
+      LATE:    { bg: '#FEF2F2', color: '#DC2626', label: t.statusLate,    Icon: AlertTriangle },
+      PARTIAL: { bg: '#EFF6FF', color: '#2563EB', label: t.statusPartial, Icon: CircleDashed },
     }
     const s = map[status] || map.PENDING
     return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: s.bg, color: s.color }}>
-        {s.label}
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: s.bg, color: s.color }}>
+        <s.Icon size={11} />{s.label}
       </span>
     )
   }
@@ -331,7 +336,7 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
           <div style={{ fontSize: 13, color: '#6B7280', marginTop: 3 }}>{t.currentMonth}</div>
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button onClick={() => toast.success('Export en cours...')} style={{ ...styles.btn, ...styles.btnOutline }}>{t.export}</button>
+          <button onClick={() => toast.success('Export en cours...')} style={{ ...styles.btn, ...styles.btnOutline }}><Download size={13} style={{ marginRight: 5, verticalAlign: -2 }} />{t.export}</button>
           <button onClick={() => setShowModal(true)} style={{ ...styles.btn, ...styles.btnGreen }}>{t.newPayment}</button>
         </div>
       </div>
@@ -339,13 +344,13 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
       {/* ── Stats ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 20 }}>
         {[
-          { icon: '💰', val: `${payments.filter(p=>p.status==='PAID').reduce((a,p)=>a+(p.amount||0),0).toLocaleString('fr-FR')}`, lbl: t.collectedFCFA, bg: '#E1F5EE', color: '#059669' },
-          { icon: '⚠️', val: `${payments.filter(p=>p.status==='LATE').reduce((a,p)=>a+(p.amount||0),0).toLocaleString('fr-FR')}`, lbl: t.lateFCFA, bg: '#FFF7ED', color: '#D97706' },
-          { icon: '✅', val: payments.filter(p=>p.status==='PAID').length, lbl: t.paidStudents, bg: '#E3F2FD', color: '#2563EB' },
-          { icon: '📊', val: payments.length, lbl: t.totalTransactions, bg: '#F0FDF9', color: '#111827' },
+          { icon: Banknote, val: `${payments.filter(p=>p.status==='PAID').reduce((a,p)=>a+(p.amount||0),0).toLocaleString('fr-FR')}`, lbl: t.collectedFCFA, bg: '#E1F5EE', color: '#059669' },
+          { icon: AlertTriangle, val: `${payments.filter(p=>p.status==='LATE').reduce((a,p)=>a+(p.amount||0),0).toLocaleString('fr-FR')}`, lbl: t.lateFCFA, bg: '#FFF7ED', color: '#D97706' },
+          { icon: CheckCircle2, val: payments.filter(p=>p.status==='PAID').length, lbl: t.paidStudents, bg: '#E3F2FD', color: '#2563EB' },
+          { icon: BarChart3, val: payments.length, lbl: t.totalTransactions, bg: '#F0FDF9', color: '#111827' },
         ].map((s, i) => (
           <div key={i} style={styles.statCard}>
-            <div style={{ ...styles.statIcon, background: s.bg }}>{s.icon}</div>
+            <div style={{ ...styles.statIcon, background: s.bg }}><s.icon size={18} style={{ color: s.color }} /></div>
             <div>
               <div style={{ ...styles.statVal, color: s.color }}>{s.val}</div>
               <div style={styles.statLbl}>{s.lbl}</div>
@@ -358,7 +363,7 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 16 }}>
         {/* Methods */}
         <div style={styles.card}>
-          <div style={styles.cardTitle}>{t.methodDistribution}</div>
+          <div style={styles.cardTitle}><PieChart size={13} style={{ marginRight: 5, verticalAlign: -2 }} />{t.methodDistribution}</div>
           {methodStats.map(m => (
             <div key={m.method} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 10, border: '1px solid #E2EDE8', marginBottom: 8 }}>
               <div style={{ width: 40, height: 40, borderRadius: 10, background: m.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{m.icon}</div>
@@ -376,7 +381,7 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
 
         {/* Quick Payment */}
         <div style={{ background: '#0B1E42', borderRadius: 14, padding: 20, color: '#fff' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>{t.quickPayment}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}><Zap size={14} style={{ marginRight: 5, verticalAlign: -2 }} />{t.quickPayment}</div>
           <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
             {Object.keys(METHOD_INFO).map(m => (
               <button key={m} onClick={() => setSelectedMethod(m)} style={{
@@ -386,14 +391,14 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
                 color: selectedMethod === m ? '#fff' : 'rgba(255,255,255,.6)',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer',
               }}>
-                {METHOD_INFO[m].icon} {METHOD_INFO[m].label}
+                <span style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", width:14, height:14, borderRadius:"50%", fontSize:8, fontWeight:800, background:"rgba(255,255,255,.25)", marginRight:4 }}>{METHOD_INFO[m].mono}</span>{METHOD_INFO[m].label}
               </button>
             ))}
           </div>
           <input style={darkInputStyle} placeholder={t.studentNameOrId} value={quickForm.student} onChange={e => setQuickForm(f => ({ ...f, student: e.target.value }))} />
           <input style={darkInputStyle} type="number" placeholder={t.amount} value={quickForm.amount} onChange={e => setQuickForm(f => ({ ...f, amount: e.target.value }))} />
           <button onClick={handleInitPayment} style={{ width: '100%', padding: 12, borderRadius: 10, border: 'none', background: '#1D9E75', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
-            {t.initiatePayment}
+            <Lock size={13} style={{ marginRight: 6, verticalAlign: -2 }} />{t.initiatePayment}
           </button>
         </div>
       </div>
@@ -401,7 +406,7 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
       {/* ── Filters ── */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 15 }}>🔍</span>
+          <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
           <input type="text" placeholder={t.search} value={search} onChange={e => setSearch(e.target.value)}
             style={{ ...inputStyle, paddingLeft: 38 }} />
         </div>
@@ -424,12 +429,12 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
         </div>
 
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>{t.loading}</div>
+          <div style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}><Loader2 size={16} className="inline animate-spin" style={{ marginRight: 6, verticalAlign: -3 }} />{t.loading}</div>
         ) : paginated.length === 0 ? (
           <div style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>{t.noResults}</div>
         ) : (
           paginated.map((p, i) => {
-            const m = METHOD_INFO[p.method] || { icon: '💳', label: p.method, bg: '#F4F7F5' }
+            const m = METHOD_INFO[p.method] || { mono: '?', label: p.method, bg: '#F4F7F5', color: '#6B7280' }
             return (
               <div key={p.id || i} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 12, padding: '12px 16px', borderBottom: '1px solid #F0F4F2', alignItems: 'center' }}>
                 <div>
@@ -442,13 +447,14 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
                 <div>{statusBadge(p.status)}</div>
                 <div>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: m.bg, color: m.color }}>
-                    {m.icon} {m.label}
+                    <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:14, height:14, borderRadius:'50%', fontSize:8, fontWeight:800, background:m.color, color:'#fff' }}>{m.mono}</span>
+                    {m.label}
                   </span>
                 </div>
                 <div style={{ fontSize: 13, color: '#374151' }}>{p.date || '—'}</div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <button style={styles.actionBtn}>🧾</button>
-                  <button style={styles.actionBtn}>💬</button>
+                  <button style={styles.actionBtn}><Receipt size={13} /></button>
+                  <button style={styles.actionBtn}><MessageCircle size={13} /></button>
                 </div>
               </div>
             )
@@ -474,7 +480,7 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
       {showModal && (
         <div style={styles.modalOverlay} onClick={e => e.target === e.currentTarget && setShowModal(false)}>
           <div style={{ ...styles.modal, direction: language === 'ar' ? 'rtl' : 'ltr' }}>
-            <div style={styles.modalTitle}>{t.newPaymentModal}</div>
+            <div style={styles.modalTitle}><CreditCard size={15} style={{ marginRight: 6, verticalAlign: -2 }} />{t.newPaymentModal}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {[
                 { label: t.studentField, key: 'studentName', placeholder: t.studentPlaceholder },
@@ -491,7 +497,7 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
                 <div>
                   <label style={styles.formLabel}>{t.methodField}</label>
                   <select style={{ ...inputStyle, marginTop: 6 }} value={form.method} onChange={e => setForm(p => ({ ...p, method: e.target.value }))}>
-                    {Object.keys(METHOD_INFO).map(m => <option key={m} value={m}>{METHOD_INFO[m].icon} {METHOD_INFO[m].label}</option>)}
+                    {Object.keys(METHOD_INFO).map(m => <option key={m} value={m}>{METHOD_INFO[m].label}</option>)}
                   </select>
                 </div>
                 <div>
@@ -504,7 +510,7 @@ export default function PaiementsTab({ schoolId, language = 'fr' }) {
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button style={styles.btnCancel} onClick={() => setShowModal(false)}>{t.cancel}</button>
-              <button style={styles.btnSave} onClick={handleSave}>{t.save}</button>
+              <button style={styles.btnSave} onClick={handleSave}><Save size={13} style={{ marginRight: 5, verticalAlign: -2 }} />{t.save}</button>
             </div>
           </div>
         </div>
