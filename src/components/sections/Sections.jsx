@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, ArrowRight, Play, AlertCircle, School as SchoolIcon, GraduationCap } from 'lucide-react'
+import { Check, X, ArrowRight, Play, AlertCircle, School as SchoolIcon, GraduationCap, ClipboardCheck, FileText, CreditCard, ShoppingBag, Globe, MessageCircle, Smartphone, Bell, Globe2 } from 'lucide-react'
 import { useLang } from '../../hooks/useLang'
 import { useReveal } from '../../hooks/useReveal'
 import { createLead } from '../../lib/api'
@@ -20,8 +20,8 @@ export function ProblemSolution() {
           <h3 className="font-syne text-xl font-bold mb-5">{r.probTitle}</h3>
           <ul className="list-none space-y-3">
             {r.prob.map((item) => (
-              <li key={item} className={`text-[15px] text-[#6B7280] relative pl-6 leading-[1.5] ${isRTL ? 'pr-6 pl-0' : ''}`}>
-                <span className={`absolute ${isRTL ? 'right-0' : 'left-0'} text-red-500 font-bold`}>✗</span>{item}
+              <li key={item} className={`text-[15px] text-[#6B7280] flex items-start gap-2 leading-[1.5]`}>
+                <X size={15} className="text-red-500 flex-shrink-0 mt-[3px]" strokeWidth={2.5} />{item}
               </li>
             ))}
           </ul>
@@ -31,8 +31,8 @@ export function ProblemSolution() {
           <h3 className="font-syne text-xl font-bold mb-5">{r.solTitle}</h3>
           <ul className="list-none space-y-3">
             {r.sol.map((item) => (
-              <li key={item} className={`text-[15px] text-[#6B7280] relative pl-6 leading-[1.5] ${isRTL ? 'pr-6 pl-0' : ''}`}>
-                <span className={`absolute ${isRTL ? 'right-0' : 'left-0'} text-[#1D9E75] font-bold`}>✓</span>{item}
+              <li key={item} className={`text-[15px] text-[#6B7280] flex items-start gap-2 leading-[1.5]`}>
+                <Check size={15} className="text-[#1D9E75] flex-shrink-0 mt-[3px]" strokeWidth={2.5} />{item}
               </li>
             ))}
           </ul>
@@ -53,8 +53,8 @@ export function Features() {
         <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] mb-4 max-w-[700px] mx-auto text-center">{f.title}</h2>
         <p className="text-[17px] text-[#6B7280] leading-[1.6] max-w-[700px] mb-12 mx-auto text-center">{f.sub}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 stagger-grid">
-          {f.items.map((item) => (
-            <FeatureCard key={item.title} item={item} />
+          {f.items.map((item, i) => (
+            <FeatureCard key={item.title} item={item} Icon={FEATURE_ICONS[i % FEATURE_ICONS.length]} />
           ))}
         </div>
       </div>
@@ -62,11 +62,15 @@ export function Features() {
   )
 }
 
-function FeatureCard({ item }) {
+const FEATURE_ICONS = [GraduationCap, ClipboardCheck, FileText, CreditCard, ShoppingBag, Globe]
+
+function FeatureCard({ item, Icon }) {
   const ref = useReveal()
   return (
     <div ref={ref} className="reveal bg-white p-8 rounded-[14px] border border-[#E5EDE9] shadow-sm hover:-translate-y-1 hover:shadow-md hover:border-[#1D9E75] transition-all">
-      <div className="text-[36px] mb-[18px]">{item.ico}</div>
+      <div className="w-12 h-12 rounded-xl bg-[#E1F5EE] flex items-center justify-center mb-[18px]">
+        <Icon size={22} className="text-[#1D9E75]" />
+      </div>
       <div className="font-syne font-bold text-xl mb-[10px]">{item.title}</div>
       <div className="text-[15px] text-[#6B7280] leading-[1.6] mb-[18px]">{item.desc}</div>
       <div className="flex flex-wrap gap-2">
@@ -77,6 +81,13 @@ function FeatureCard({ item }) {
     </div>
   )
 }
+
+/* Mobile Money → monograma colorido (marca de terceiros); Mensageria/API → ícone vetorial */
+const INTEGRATION_ICONS = [
+  [{ mono: 'W' }, { mono: 'OM' }, { mono: 'MM' }],
+  [{ Icon: MessageCircle }, { Icon: Smartphone }],
+  [{ Icon: Bell }, { Icon: Globe2 }],
+]
 
 /* ═══ INTEGRATIONS ═══ */
 export function Integrations() {
@@ -89,14 +100,18 @@ export function Integrations() {
         <h2 className="font-syne font-extrabold text-[clamp(30px,3vw,46px)] leading-[1.1] tracking-[-1px] text-white mb-4 max-w-[700px] mx-auto text-center">{g.title}</h2>
         <p className="text-[17px] text-white/75 leading-[1.6] max-w-[700px] mb-12 mx-auto text-center">{g.sub}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {g.groups.map((group) => (
+          {g.groups.map((group, gi) => (
             <div key={group.label}>
               <div className="text-[11px] font-bold uppercase tracking-[2px] text-white/60 mb-4">{group.label}</div>
               <div className="space-y-3">
-                {group.items.map((item) => (
+                {group.items.map((item, ii) => {
+                  const cfg = INTEGRATION_ICONS[gi]?.[ii]
+                  return (
                   <div key={item.name} className="integ-card">
-                    <div className="w-10 h-10 rounded-[10px] flex items-center justify-center text-xl flex-shrink-0" style={{ background: item.bg }}>
-                      {item.icon}
+                    <div className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: item.bg }}>
+                      {cfg?.mono
+                        ? <span className="text-white font-extrabold text-[13px]">{cfg.mono}</span>
+                        : cfg?.Icon && <cfg.Icon size={17} className="text-white" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-bold text-white">{item.name}</div>
@@ -106,7 +121,8 @@ export function Integrations() {
                       {item.badge}
                     </span>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           ))}

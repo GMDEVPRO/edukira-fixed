@@ -9,6 +9,7 @@ import {
 import {
   LayoutDashboard, GraduationCap, Link2, PenLine, CreditCard, CheckCircle2,
   MessageCircle, Trophy, ShoppingBag, Banknote, AlertTriangle, Bell, Pin,
+  TrendingUp, PieChart as PieChartIcon, BarChart3, Activity, Zap, Save, Send, X, Wrench,
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import { useLang } from '../../hooks/useLang'
@@ -75,11 +76,13 @@ function KpiCard({ ico: Ico, val, lbl, delta, up, color, bg, loading }) {
   )
 }
 
-function CardShell({ title, action, children }) {
+function CardShell({ title, icon: Icon, action, children }) {
   return (
     <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: C.border }}>
       <div className="flex justify-between items-center px-5 py-3 border-b" style={{ borderColor: C.border }}>
-        <div className="font-syne font-bold text-sm text-[#111827]">{title}</div>
+        <div className="font-syne font-bold text-sm text-[#111827] flex items-center gap-1.5">
+          {Icon && <Icon size={14} style={{ color: C.green }} />}{title}
+        </div>
         {action && <span className="text-[11px] cursor-pointer" style={{ color: C.green }}>{action}</span>}
       </div>
       <div className="p-4">{children}</div>
@@ -303,7 +306,7 @@ function DashScreen({ d, currency }) {
 
         {/* Revenue area chart */}
         <ErrorBoundary section={d.errors.chartRevenue} minimal>
-          <CardShell title={d.charts.monthlyRevenue} action={d.charts.viewAll}>
+          <CardShell title={d.charts.monthlyRevenue} icon={TrendingUp} action={d.charts.viewAll}>
             {payLoading ? (
               <div className="h-36 flex items-center justify-center">
                 <div className="w-6 h-6 border-4 border-[#E1F5EE] border-t-[#1D9E75] rounded-full animate-spin" />
@@ -323,7 +326,7 @@ function DashScreen({ d, currency }) {
                     <YAxis tick={{ fontSize:9, fill:'#9CA3AF' }} axisLine={false} tickLine={false}
                            tickFormatter={v => v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
                     <Tooltip content={<CustomTooltip currency={currency} />} />
-                    <Area type="monotone" dataKey="revenus" name={d.charts.monthlyRevenue.replace(/^\S+\s/,'')} stroke="#1D9E75" strokeWidth={2.5}
+                    <Area type="monotone" dataKey="revenus" name={d.charts.monthlyRevenue} stroke="#1D9E75" strokeWidth={2.5}
                           fill="url(#revGrad)" dot={{ fill:'#1D9E75', r:3 }} activeDot={{ r:5 }} />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -349,7 +352,7 @@ function DashScreen({ d, currency }) {
 
         {/* Payment pie chart */}
         <ErrorBoundary section={d.errors.chartPayments} minimal>
-          <CardShell title={d.charts.paymentStatus}>
+          <CardShell title={d.charts.paymentStatus} icon={PieChartIcon}>
             {payLoading ? (
               <div className="h-36 flex items-center justify-center">
                 <div className="w-6 h-6 border-4 border-[#E1F5EE] border-t-[#1D9E75] rounded-full animate-spin" />
@@ -392,7 +395,7 @@ function DashScreen({ d, currency }) {
 
         {/* Grades by class bar chart */}
         <ErrorBoundary section={d.errors.chartGrades} minimal>
-          <CardShell title={d.charts.avgByClass}>
+          <CardShell title={d.charts.avgByClass} icon={BarChart3}>
             {gradeLoading ? (
               <div className="h-36 flex items-center justify-center">
                 <div className="w-6 h-6 border-4 border-[#E1F5EE] border-t-[#1D9E75] rounded-full animate-spin" />
@@ -408,7 +411,7 @@ function DashScreen({ d, currency }) {
                   <XAxis dataKey="classe" tick={{ fontSize:9, fill:'#9CA3AF' }} axisLine={false} tickLine={false} />
                   <YAxis domain={[0, 20]} tick={{ fontSize:9, fill:'#9CA3AF' }} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="moyenne" name={d.charts.avgByClass.replace(/^\S+\s/,'')} radius={[4,4,0,0]}>
+                  <Bar dataKey="moyenne" name={d.charts.avgByClass} radius={[4,4,0,0]}>
                     {gradesByClass.map((entry, i) => (
                       <Cell key={i}
                         fill={entry.moyenne >= 14 ? '#1D9E75' : entry.moyenne >= 10 ? '#D97706' : '#DC2626'} />
@@ -425,7 +428,7 @@ function DashScreen({ d, currency }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         {/* Recent activity */}
-        <CardShell title={d.activity.title} action={d.activity.viewAll}>
+        <CardShell title={d.activity.title} icon={Activity} action={d.activity.viewAll}>
           {dashLoading ? (
             <div className="space-y-2">
               {[1,2,3].map(i => (
@@ -463,7 +466,7 @@ function DashScreen({ d, currency }) {
         </CardShell>
 
         {/* Quick actions */}
-        <CardShell title={d.quickActions.title}>
+        <CardShell title={d.quickActions.title} icon={Zap}>
           <div className="grid grid-cols-2 gap-3">
             {quickActionsList.map((q, i) => (
               <Link key={i} to={q.path}
@@ -506,7 +509,7 @@ function StudentsScreen({ d }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        <h2 className="font-syne font-bold text-lg text-[#111827]">{d.students.title}</h2>
+        <h2 className="font-syne font-bold text-lg text-[#111827] flex items-center gap-2"><GraduationCap size={17} style={{ color: C.green }} />{d.students.title}</h2>
         <div className="flex gap-2">
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder={d.students.searchPh}
@@ -581,7 +584,7 @@ function PaymentsScreen({ d, currency }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="font-syne font-bold text-lg text-[#111827]">{d.payments.title}</h2>
+      <h2 className="font-syne font-bold text-lg text-[#111827] flex items-center gap-2"><CreditCard size={17} style={{ color: C.green }} />{d.payments.title}</h2>
       <div className="grid grid-cols-3 gap-3">
         {[
           { lbl:d.payments.collected, val:`${(stats.paid/1000000).toFixed(1)}M ${currency}`, color:C.green, bg:'#E1F5EE' },
@@ -741,7 +744,7 @@ function GradesScreen({ d }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="font-syne font-bold text-lg text-[#111827]">{g.title}</h2>
+      <h2 className="font-syne font-bold text-lg text-[#111827] flex items-center gap-2"><PenLine size={17} style={{ color: C.green }} />{g.title}</h2>
 
       {/* Seletores */}
       <div className="bg-white rounded-xl border p-4 grid grid-cols-1 sm:grid-cols-4 gap-3" style={{ borderColor: C.border }}>
@@ -822,12 +825,12 @@ function GradesScreen({ d }) {
             <button onClick={handleSave} disabled={!canSave || saveGrades.isPending}
               className="flex-1 px-4 py-2.5 rounded-lg text-white text-[12px] font-bold disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: C.green }}>
-              {saveGrades.isPending ? g.saving : g.save}
+              {saveGrades.isPending ? g.saving : (<><Save size={13} className="inline -mt-0.5 mr-1.5" />{g.save}</>)}
             </button>
             <button onClick={handlePublish} disabled={publishGrades.isPending}
               className="flex-1 px-4 py-2.5 rounded-lg text-[12px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ borderColor: C.navy, color: C.navy, background:'white' }}>
-              {publishGrades.isPending ? g.publishing : g.publish}
+              {publishGrades.isPending ? g.publishing : (<><Send size={13} className="inline -mt-0.5 mr-1.5" />{g.publish}</>)}
             </button>
           </div>
           {!subjectName.trim() && (
@@ -873,7 +876,7 @@ function StudentAccountsScreen({ d }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="font-syne font-bold text-lg text-[#111827]">{a.title}</h2>
+      <h2 className="font-syne font-bold text-lg text-[#111827] flex items-center gap-2"><Link2 size={17} style={{ color: C.green }} />{a.title}</h2>
 
       {pending.length === 0 ? (
         <div className="bg-white rounded-xl border p-8 text-center text-[#9CA3AF] text-sm" style={{ borderColor: C.border }}>
@@ -909,14 +912,14 @@ function StudentAccountsScreen({ d }) {
                     disabled={!linkChoice[acc.accountId] || reviewAccount.isPending}
                     className="px-3 py-2 rounded-lg text-white text-[12px] font-bold disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     style={{ background: C.green }}>
-                    {reviewAccount.isPending ? a.approving : a.approve}
+                    {reviewAccount.isPending ? a.approving : (<><CheckCircle2 size={13} className="inline -mt-0.5 mr-1" />{a.approve}</>)}
                   </button>
 
                   <button onClick={() => handleReject(acc.accountId)}
                     disabled={reviewAccount.isPending}
                     className="px-3 py-2 rounded-lg text-[12px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     style={{ borderColor: C.red, color: C.red, background:'white' }}>
-                    {reviewAccount.isPending ? a.rejecting : a.reject}
+                    {reviewAccount.isPending ? a.rejecting : (<><X size={13} className="inline -mt-0.5 mr-1" />{a.reject}</>)}
                   </button>
                 </div>
               </div>
@@ -934,7 +937,7 @@ function StudentAccountsScreen({ d }) {
 function PlaceholderScreen({ title, sub }) {
   return (
     <div className="flex flex-col items-center justify-center h-64 text-[#6B7280]">
-      <div className="text-4xl mb-3">🚧</div>
+      <Wrench size={32} className="mb-3 text-[#D1D5DB]" />
       <div className="font-syne font-bold text-lg mb-1">{title}</div>
       <div className="text-sm">{sub}</div>
     </div>
@@ -1040,7 +1043,8 @@ export default function Dashboard() {
         {/* Topbar */}
         <div className="flex items-center px-5 h-14 border-b bg-white flex-shrink-0 gap-3"
              style={{ borderColor:C.border }}>
-          <div className="font-syne font-bold text-[15px] text-[#111827] flex-1">
+          <div className="font-syne font-bold text-[15px] text-[#111827] flex-1 flex items-center gap-2">
+            {(() => { const ActiveIcon = NAV.find(n => n.id === active)?.ico; return ActiveIcon ? <ActiveIcon size={16} style={{ color: C.green }} /> : null })()}
             {d.screenTitles[active]}
           </div>
           <div className="flex items-center gap-2 ml-auto">

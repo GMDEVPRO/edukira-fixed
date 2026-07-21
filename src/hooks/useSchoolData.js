@@ -65,7 +65,7 @@ export function useAddStudent() {
     mutationFn: addStudent,
     onSuccess: (data) => {
       qc.setQueryData(QK.students(), (old = []) => [data, ...old])
-      toast.success('Élève ajouté ✅')
+      toast.success('Élève ajouté')
     },
     onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur ajout élève'),
   })
@@ -78,7 +78,7 @@ export function useUpdateStudent() {
     onSuccess: (data) => {
       qc.setQueryData(QK.students(), (old = []) =>
         old.map(s => s.id === data.id ? data : s))
-      toast.success('Élève mis à jour ✅')
+      toast.success('Élève mis à jour')
     },
     onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur mise à jour'),
   })
@@ -125,7 +125,7 @@ export function useSaveGrades() {
     mutationFn: saveGradesBatch,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['grades'] })
-      toast.success('Notes enregistrées ✅')
+      toast.success('Notes enregistrées')
     },
     onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur enregistrement notes'),
   })
@@ -134,7 +134,7 @@ export function useSaveGrades() {
 export function usePublishGrades() {
   return useMutation({
     mutationFn: publishGrades,
-    onSuccess: () => toast.success('Notes publiées — bulletins envoyés ✅'),
+    onSuccess: () => toast.success('Notes publiées — bulletins envoyés'),
     onError:   (err) => toast.error(err.response?.data?.message ?? 'Erreur publication'),
   })
 }
@@ -166,7 +166,7 @@ export function useInitiatePayment() {
     mutationFn: initiatePayment,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['payments'] })
-      toast.success('Paiement initié ✅')
+      toast.success('Paiement initié')
     },
     onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur paiement'),
   })
@@ -187,7 +187,7 @@ export function useSaveAttendance() {
     mutationFn: saveAttendance,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['attendance'] })
-      toast.success('Présences enregistrées ✅')
+      toast.success('Présences enregistrées')
     },
     onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur présences'),
   })
@@ -197,7 +197,7 @@ export function useSaveAttendance() {
 export function useSendBroadcast() {
   return useMutation({
     mutationFn: sendBroadcast,
-    onSuccess: () => toast.success('Message diffusé ✅'),
+    onSuccess: () => toast.success('Message diffusé'),
     onError:   (err) => toast.error(err.response?.data?.message ?? 'Erreur envoi message'),
   })
 }
@@ -254,7 +254,7 @@ export function useReviewEnrollment() {
     mutationFn: ({ id, body }) => reviewEnrollment(id, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['enrollments'] })
-      toast.success('Inscription mise à jour ✅')
+      toast.success('Inscription mise à jour')
     },
     onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur révision'),
   })
@@ -308,7 +308,7 @@ export function useReviewStudentAccount() {
     mutationFn: ({ id, ...data }) => reviewStudentAccount(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['studentAccounts'] })
-      toast.success('Compte révisé ✅')
+      toast.success('Compte révisé')
     },
     onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur révision compte'),
   })

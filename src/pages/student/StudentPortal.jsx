@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, PenLine, CreditCard, FileText, MessageCircle,
-  BookOpen, TrendingUp, AlertTriangle, User, Receipt, Download,
+  BookOpen, TrendingUp, AlertTriangle, User, Receipt, Download, Clock, Ban,
 } from 'lucide-react'
 import { useStudentPortalMe, useStudentGrades, useStudentPayments, useStudentDocuments } from '../../hooks/useSchoolData'
 import api from '../../api/axios'
@@ -356,7 +356,7 @@ export default function StudentPortal() {
   if (!loadMe && accountStatus === 'PENDING_APPROVAL') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background:'#0B1E42' }}>
-        <div className="text-5xl mb-4">⏳</div>
+        <Clock size={44} className="mb-4 text-white/70" />
         <div className="font-syne font-bold text-xl text-white mb-2">Compte en attente d'approbation</div>
         <p className="text-white/50 text-sm max-w-[380px] mb-6">
           Votre demande a été envoyée à l'école. Vous recevrez accès dès qu'un administrateur confirmera votre identité.
@@ -371,7 +371,7 @@ export default function StudentPortal() {
   if (!loadMe && accountStatus === 'REJECTED') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background:'#0B1E42' }}>
-        <div className="text-5xl mb-4">🚫</div>
+        <Ban size={44} className="mb-4 text-white/70" />
         <div className="font-syne font-bold text-xl text-white mb-2">Demande refusée</div>
         <p className="text-white/50 text-sm max-w-[380px] mb-6">
           {portalMe?.rejectionReason || "L'école n'a pas pu confirmer votre identité. Contactez l'administration pour plus d'informations."}
@@ -388,7 +388,7 @@ export default function StudentPortal() {
   if (!loadMe && portalMeError && !portalMe) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background:'#0B1E42' }}>
-        <div className="text-5xl mb-4">⏳</div>
+        <Clock size={44} className="mb-4 text-white/70" />
         <div className="font-syne font-bold text-xl text-white mb-2">Compte en attente d'approbation</div>
         <p className="text-white/50 text-sm max-w-[380px] mb-6">
           Votre compte n'est pas encore lié à un dossier élève. Cela peut prendre un peu de temps après l'inscription.
