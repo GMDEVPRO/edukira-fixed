@@ -78,8 +78,8 @@ api.interceptors.response.use(
 )
 
 /* ── Auth ── */
-export const loginAdmin    = ({ email, password, schoolId }) =>
-  api.post('/v1/auth/login', { email, password, schoolId }).then(r => r.data)
+export const loginAdmin    = ({ email, password, schoolCode }) =>
+  api.post('/v1/auth/login', { email, password, schoolCode }).then(r => r.data)
 export const refreshToken  = (token) =>
   api.post('/v1/auth/refresh', null, { params: { refreshToken: token } }).then(r => r.data)
 export const logoutApi     = (token) =>

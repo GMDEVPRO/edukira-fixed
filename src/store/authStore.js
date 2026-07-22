@@ -5,7 +5,7 @@ import { persist } from 'zustand/middleware'
  * Auth store — única fonte de verdade.
  *
  * AuthResponse do backend:
- *   { accessToken, refreshToken, role, preferredLanguage, school: { id, name, country, type } }
+ *   { accessToken, refreshToken, role, preferredLanguage, school: { id, name, country, type, schoolCode } }
  *
  * StudentAuthResponse do backend:
  *   { accessToken, refreshToken, studentAccountId, fullName, accountStatus,
@@ -32,10 +32,11 @@ const useAuthStore = create(
         },
         school: data.school
           ? {
-              id:      data.school.id,
-              name:    data.school.name,
-              country: data.school.country,
-              type:    data.school.type ?? null,
+              id:         data.school.id,
+              name:       data.school.name,
+              country:    data.school.country,
+              type:       data.school.type ?? null,
+              schoolCode: data.school.schoolCode ?? null,
             }
           : null,
       }),

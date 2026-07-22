@@ -9,7 +9,7 @@ export default function Login() {
   const [searchParams] = useSearchParams()
   const plan = searchParams.get('plan')
   const registerHref = plan ? `/register?plan=${plan}` : '/register'
-  const [form, setForm] = useState({ email:'', password:'', schoolId:'' })
+  const [form, setForm] = useState({ email:'', password:'', schoolCode:'' })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState('')
@@ -18,7 +18,7 @@ export default function Login() {
     const e = {}
     if (!form.email) e.email = 'Email requis'
     if (!form.password) e.password = 'Mot de passe requis'
-    if (!form.schoolId) e.schoolId = 'ID ecole requis'
+    if (!form.schoolCode) e.schoolCode = 'Code ecole requis'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -38,7 +38,7 @@ export default function Login() {
       const { data } = await api.post('/v1/auth/login', {
         email: form.email,
         password: form.password,
-        schoolId: form.schoolId,
+        schoolCode: form.schoolCode,
       })
       if (data.success) {
         login(data.data)
@@ -60,7 +60,7 @@ export default function Login() {
       const { data } = await api.post('/v1/auth/login', {
         email: 'admin@lyceetech.sn',
         password: 'Admin1234!',
-        schoolId: '75deeec4-cbf8-41c6-a6a1-96354d185941',
+        schoolCode: 'SN-0001', // TODO: confirmar o schoolCode real dessa conta no banco
       })
       if (data.success) {
         login(data.data)
@@ -109,12 +109,12 @@ export default function Login() {
               {errors.password && <p className="text-red-400 text-xs mt-1"> {errors.password}</p>}
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 text-white/45">ID DE L'ÉCOLE</label>
-              <input type="text" value={form.schoolId} onChange={upd('schoolId')} placeholder="97c55f47-71e1-443d-..."
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 text-white/45">CODE DE L'ÉCOLE</label>
+              <input type="text" value={form.schoolCode} onChange={upd('schoolCode')} placeholder="SN-0001"
                 className="w-full px-3.5 py-2.5 rounded-xl text-xs font-mono outline-none text-white placeholder-white/25"
-                style={{background:'rgba(255,255,255,0.06)',border:errors.schoolId?'1px solid #f87171':'1px solid rgba(255,255,255,0.12)'}}/>
-              {errors.schoolId && <p className="text-red-400 text-xs mt-1"> {errors.schoolId}</p>}
-              <p className="text-white/25 text-xs mt-1">Disponible dans votre email d'activation</p>
+                style={{background:'rgba(255,255,255,0.06)',border:errors.schoolCode?'1px solid #f87171':'1px solid rgba(255,255,255,0.12)'}}/>
+              {errors.schoolCode && <p className="text-red-400 text-xs mt-1"> {errors.schoolCode}</p>}
+              <p className="text-white/25 text-xs mt-1">Affiché à la fin de l'inscription de votre école</p>
             </div>
             <button type="submit" disabled={loading}
               className="w-full py-3.5 rounded-xl font-semibold text-sm text-white transition-all"
