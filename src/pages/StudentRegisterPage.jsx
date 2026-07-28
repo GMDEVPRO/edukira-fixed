@@ -38,7 +38,7 @@ const RELATIONS = ['Père / Pai','Mère / Mãe','Tuteur légal / Tutor','Grand-p
 
 /* ── Validation rules ── */
 const rules = {
-  schoolId:         v => v.trim() ? '' : 'ID da escola obrigatório',
+  schoolCode:       v => v.trim() ? '' : 'Código da escola obrigatório',
   firstName:        v => v.trim() ? '' : 'Prénom / Nome obrigatório',
   lastName:         v => v.trim() ? '' : 'Nom / Apelido obrigatório',
   docType:          v => v ? '' : 'Tipo de documento obrigatório',
@@ -77,6 +77,74 @@ const Input = ({ value, onChange, error, ...props }) => (
     {...props}
   />
 )
+
+/**
+ * Busca de escola por nome — substitui o antigo campo de "código da escola"
+ * (que exigia o usuário digitar um código que ele nunca viu). O aluno/tutor
+ * digita o nome, escolhe da lista, e o schoolCode certo é guardado por trás
+ * dos panos em onSelect.
+ */
+function SchoolAutocomplete({ value, label, error, onSelect }) {
+  const [query, setQuery]     = useState(value?.name ?? '')
+  const [options, setOptions] = useState([])
+  const [open, setOpen]       = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const handleChange = (e) => {
+    const q = e.target.value
+    setQuery(q)
+    onSelect(null) // limpa a seleção anterior até escolher de novo na lista
+    if (q.trim().length < 2) { setOptions([]); setOpen(false); return }
+    setLoading(true)
+    api.get('/v1/schools/search', { params: { q: q.trim() } })
+      .then(({ data }) => { setOptions(data?.data ?? []); setOpen(true) })
+      .catch(() => setOptions([]))
+      .finally(() => setLoading(false))
+  }
+
+  const pick = (school) => {
+    setQuery(school.name)
+    setOpen(false)
+    onSelect(school)
+  }
+
+  return (
+    <div className="relative">
+      <Label required>{label}</Label>
+      <Input
+        value={query}
+        onChange={handleChange}
+        onFocus={() => options.length > 0 && setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        error={error}
+        placeholder="Ex: Lycée Excellence Dakar"
+        autoComplete="off"
+      />
+      {loading && <p className="text-[11px] text-[#9CA3AF] mt-1">Recherche...</p>}
+      {open && options.length > 0 && (
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-[#E5E7EB] rounded-lg shadow-lg max-h-56 overflow-y-auto">
+          {options.map(s => (
+            <button
+              key={s.schoolCode}
+              type="button"
+              onMouseDown={() => pick(s)}
+              className="w-full text-left px-3.5 py-2.5 hover:bg-[#F0FDF8] transition-colors border-b border-[#F3F4F6] last:border-0"
+            >
+              <div className="text-[.85rem] font-semibold text-[#111827]">{s.name}</div>
+              <div className="text-[.72rem] text-[#6B7280]">{s.city ? `${s.city}, ` : ''}{s.country}</div>
+            </button>
+          ))}
+        </div>
+      )}
+      {open && !loading && query.trim().length >= 2 && options.length === 0 && (
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-[#E5E7EB] rounded-lg shadow-lg px-3.5 py-2.5 text-[.8rem] text-[#9CA3AF]">
+          Aucune école trouvée / Nenhuma escola encontrada
+        </div>
+      )}
+      <FieldError msg={error} />
+    </div>
+  )
+}
 
 const Select = ({ value, onChange, error, children, ...props }) => (
   <select
@@ -144,7 +212,7 @@ const SuccessScreen = ({ back }) => (
 
 /* ════ STUDENT FORM ════ */
 function StudentForm() {
-  const INIT = { schoolId:'', firstName:'', lastName:'', docType:'', docNumber:'', phone:'', classLevel:'', country:'', password:'' }
+  const INIT = { schoolCode:'', firstName:'', lastName:'', docType:'', docNumber:'', phone:'', classLevel:'', country:'', password:'' }
   const [f, setF] = useState(INIT)
   const [errs, setErrs] = useState({})
   const [status, setStatus] = useState('idle')
@@ -157,7 +225,7 @@ function StudentForm() {
 
   const validate = () => {
     const e = {}
-    ;['schoolId','firstName','lastName','docType','docNumber','password'].forEach(k => {
+    ;['schoolCode','firstName','lastName','docType','docNumber','password'].forEach(k => {
       const msg = rules[k]?.(f[k] ?? '')
       if (msg) e[k] = msg
     })
@@ -170,7 +238,7 @@ function StudentForm() {
     setStatus('sending')
     try {
       await api.post('/v1/student/auth/register', {
-        schoolId: f.schoolId,
+        schoolCode: f.schoolCode,
         fullName: `${f.firstName} ${f.lastName}`,
         documentType: f.docType, documentNumber: f.docNumber,
         phone: f.phone, password: f.password,
@@ -188,9 +256,14 @@ function StudentForm() {
   return (
     <div className="p-6 space-y-5">
       <div>
-        <Label required>ID de l'école / ID da Escola</Label>
-        <Input value={f.schoolId} onChange={upd('schoolId')} error={errs.schoolId} placeholder="Ex: EDK-2025-DAKAR" />
-        <FieldError msg={errs.schoolId} />
+        <SchoolAutocomplete
+          label="École / Escola"
+          error={errs.schoolCode}
+          onSelect={(school) => {
+            setF(p => ({ ...p, schoolCode: school?.schoolCode ?? '' }))
+            setErrs(p => ({ ...p, schoolCode: school ? '' : 'Sélectionnez une école dans la liste' }))
+          }}
+        />
       </div>
 
       <div>
@@ -253,7 +326,7 @@ function StudentForm() {
 /* ════ TUTOR FORM ════ */
 function TutorForm() {
   const INIT = {
-    schoolId:'',
+    schoolCode:'',
     tutorFirstName:'', tutorLastName:'', tutorDocType:'', tutorDocNumber:'',
     tutorPhone:'', tutorEmail:'', tutorRelation:'', tutorPassword:'', tutorCountry:'',
     childFirstName:'', childLastName:'', childDocType:'', childDocNumber:'', childClass:'', childCountry:'',
@@ -270,7 +343,7 @@ function TutorForm() {
 
   const validate = () => {
     const e = {}
-    const required = ['schoolId','tutorFirstName','tutorLastName','tutorDocType','tutorDocNumber','tutorPhone','tutorRelation','tutorPassword','childFirstName','childDocNumber']
+    const required = ['schoolCode','tutorFirstName','tutorLastName','tutorDocType','tutorDocNumber','tutorPhone','tutorRelation','tutorPassword','childFirstName','childDocNumber']
     required.forEach(k => { const msg = rules[k]?.(f[k] ?? ''); if (msg) e[k] = msg })
     setErrs(e)
     return Object.keys(e).length === 0
@@ -281,7 +354,7 @@ function TutorForm() {
     setStatus('sending')
     try {
       await api.post('/v1/student/auth/register', {
-        schoolId: f.schoolId,
+        schoolCode: f.schoolCode,
         fullName: `${f.tutorFirstName} ${f.tutorLastName}`,
         documentType: f.tutorDocType, documentNumber: f.tutorDocNumber,
         phone: f.tutorPhone, email: f.tutorEmail, password: f.tutorPassword, relation: f.tutorRelation,
@@ -304,9 +377,14 @@ function TutorForm() {
   return (
     <div className="p-6 space-y-5">
       <div>
-        <Label required>ID de l'école / ID da Escola</Label>
-        <Input value={f.schoolId} onChange={upd('schoolId')} error={errs.schoolId} placeholder="Ex: EDK-2025-DAKAR" />
-        <FieldError msg={errs.schoolId} />
+        <SchoolAutocomplete
+          label="École / Escola"
+          error={errs.schoolCode}
+          onSelect={(school) => {
+            setF(p => ({ ...p, schoolCode: school?.schoolCode ?? '' }))
+            setErrs(p => ({ ...p, schoolCode: school ? '' : 'Sélectionnez une école dans la liste' }))
+          }}
+        />
       </div>
 
       {/* ── TUTOR ── */}
@@ -481,23 +559,23 @@ export default function StudentRegisterPage() {
 
 function LoginMode({ onBack }) {
   const navigate = useNavigate()
-  const [f, setF] = useState({ schoolId:'', documentNumber:'', password:'' })
+  const [f, setF] = useState({ schoolCode:'', documentNumber:'', password:'' })
   const [errs, setErrs] = useState({})
   const [status, setStatus] = useState('idle')
 
   const upd = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }))
 
   const submit = async () => {
-    if (!f.schoolId || !f.documentNumber || !f.password) {
+    if (!f.schoolCode || !f.documentNumber || !f.password) {
       setErrs({ api:'Remplissez tous les champs.' }); return
     }
     setStatus('sending')
     try {
-      /* StudentLoginRequest: { documentNumber, password, schoolId: UUID } */
+      /* StudentLoginRequest: { documentNumber, password, schoolCode } */
       const res = await api.post('/v1/student/auth/login', {
         documentNumber: f.documentNumber,
         password:       f.password,
-        schoolId:       f.schoolId,
+        schoolCode:     f.schoolCode,
       })
       if (res.data?.data?.accessToken) {
         /* Store via authStore — not raw localStorage */
@@ -516,7 +594,12 @@ function LoginMode({ onBack }) {
   return (
     <div className="p-6 space-y-4">
       {errs.api && <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-[.8rem] flex items-center gap-2"><AlertCircle size={14} className="flex-shrink-0" /> {errs.api}</div>}
-      <div><Label required>ID de l'école</Label><Input value={f.schoolId} onChange={upd('schoolId')} placeholder="Ex: 97c55f47-71e1-..." /></div>
+      <div>
+        <SchoolAutocomplete
+          label="École / Escola"
+          onSelect={(school) => setF(p => ({ ...p, schoolCode: school?.schoolCode ?? '' }))}
+        />
+      </div>
       <div><Label required>Numéro d'identité</Label><Input value={f.documentNumber} onChange={upd('documentNumber')} placeholder="Ex: 1234567890" /></div>
       <div><Label required>Mot de passe</Label><Input value={f.password} onChange={upd('password')} type="password" placeholder="••••••••" /></div>
       <button onClick={submit} disabled={status==='sending'}

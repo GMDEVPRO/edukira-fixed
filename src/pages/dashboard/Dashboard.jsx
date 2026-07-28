@@ -9,11 +9,11 @@ import {
 import {
   LayoutDashboard, GraduationCap, Link2, PenLine, CreditCard, CheckCircle2,
   MessageCircle, Trophy, ShoppingBag, Banknote, AlertTriangle, Bell, Pin,
-  TrendingUp, PieChart as PieChartIcon, BarChart3, Activity, Zap, Save, Send, X, Wrench,
+  TrendingUp, PieChart as PieChartIcon, BarChart3, Activity, Zap, Save, Send, X, Wrench, Plus,
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import { useLang } from '../../hooks/useLang'
-import { useDashboard, useStudents, usePayments, useGradesForClasses, useCountryConfig, useGrades, useSaveGrades, usePublishGrades, usePendingStudentAccounts, useReviewStudentAccount } from '../../hooks/useSchoolData'
+import { useDashboard, useStudents, usePayments, useGradesForClasses, useCountryConfig, useGrades, useSaveGrades, usePublishGrades, usePendingStudentAccounts, useReviewStudentAccount, useAddStudent } from '../../hooks/useSchoolData'
 import { ErrorBoundary } from '../../components/error/ErrorBoundary'
 import ApiErrorFallback from '../../components/error/ApiErrorFallback'
 import { tokens } from '../../styles/tokens'
@@ -487,10 +487,95 @@ function DashScreen({ d, currency }) {
 }
 
 /* ════════════════════ STUDENTS SCREEN ════════════════════ */
+const CLASS_LEVELS = [
+  'CP','CE1','CE2','CM1','CM2','6ème','5ème','4ème','3ème',
+  'Seconde','Première','Terminale','Licence 1','Licence 2','Licence 3','Master 1','Master 2',
+]
+
+function AddStudentModal({ onClose }) {
+  const addStudent = useAddStudent()
+  const [f, setF] = useState({
+    firstName:'', lastName:'', classLevel:'', documentNumber:'',
+    guardianName:'', guardianPhone:'', guardianEmail:'', guardianDocumentNumber:'',
+  })
+  const upd = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }))
+
+  const submit = (e) => {
+    e.preventDefault()
+    if (!f.firstName.trim() || !f.lastName.trim()) return
+    addStudent.mutate(
+      { ...f, enrollmentDate: new Date().toISOString().slice(0, 10) },
+      { onSuccess: onClose }
+    )
+  }
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <form onSubmit={submit} className="bg-white rounded-xl w-full max-w-[440px] max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: C.border }}>
+          <div className="font-syne font-bold text-[15px] text-[#111827] flex items-center gap-2">
+            <GraduationCap size={16} style={{ color: C.green }} /> Nouvel élève
+          </div>
+          <button type="button" onClick={onClose} className="text-[#9CA3AF] hover:text-[#111827]"><X size={18} /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">Prénom *</label>
+              <input value={f.firstName} onChange={upd('firstName')} required
+                className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">Nom *</label>
+              <input value={f.lastName} onChange={upd('lastName')} required
+                className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+            </div>
+          </div>
+          <div>
+            <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">Classe</label>
+            <select value={f.classLevel} onChange={upd('classLevel')}
+              className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }}>
+              <option value="">--</option>
+              {CLASS_LEVELS.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">Nº de documento do aluno</label>
+            <input value={f.documentNumber} onChange={upd('documentNumber')} placeholder="Ex: 1234567890"
+              className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+          </div>
+          <div className="pt-2 border-t" style={{ borderColor: C.border }}>
+            <div className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide mb-2">Responsável</div>
+            <div className="space-y-2.5">
+              <input value={f.guardianName} onChange={upd('guardianName')} placeholder="Nome do responsável"
+                className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+              <input value={f.guardianPhone} onChange={upd('guardianPhone')} type="tel" placeholder="Telefone"
+                className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+              <input value={f.guardianEmail} onChange={upd('guardianEmail')} type="email" placeholder="Email (opcional)"
+                className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+              <input value={f.guardianDocumentNumber} onChange={upd('guardianDocumentNumber')} placeholder="Nº de documento do responsável"
+                className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 px-5 py-4 border-t" style={{ borderColor: C.border }}>
+          <button type="button" onClick={onClose}
+            className="px-4 py-2 rounded-lg text-[12px] font-semibold text-[#6B7280] hover:bg-[#F4F7F5]">Annuler</button>
+          <button type="submit" disabled={addStudent.isPending}
+            className="px-4 py-2 rounded-lg text-white text-[12px] font-bold disabled:opacity-60" style={{ background: C.green }}>
+            {addStudent.isPending ? 'Ajout...' : 'Ajouter'}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
 function StudentsScreen({ d }) {
   const { data: studentsRaw, isLoading, error, refetch } = useStudents()
   const students = toArray(studentsRaw)
   const [search, setSearch] = useState('')
+  const [showAdd, setShowAdd] = useState(false)
 
   const getName = (s) => `${s.firstName ?? ''} ${s.lastName ?? ''}`.trim() || s.fullName || '—'
 
@@ -515,11 +600,11 @@ function StudentsScreen({ d }) {
             placeholder={d.students.searchPh}
             className="border rounded-lg px-3 py-2 text-[12px] outline-none focus:border-[#1D9E75] transition-colors w-56"
             style={{ borderColor:'#E5E7EB' }} />
-          <Link to="/student"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-[12px] font-bold no-underline hover:opacity-90"
+          <button onClick={() => setShowAdd(true)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-[12px] font-bold border-none cursor-pointer hover:opacity-90"
             style={{ background: C.green }}>
-            {d.students.add}
-          </Link>
+            <Plus size={14} />{d.students.add}
+          </button>
         </div>
       </div>
       <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: C.border }}>
@@ -562,6 +647,7 @@ function StudentsScreen({ d }) {
           </table>
         </div>
       </div>
+      {showAdd && <AddStudentModal onClose={() => setShowAdd(false)} />}
     </div>
   )
 }
@@ -862,8 +948,7 @@ function StudentAccountsScreen({ d }) {
   const getName = (s) => `${s.firstName ?? ''} ${s.lastName ?? ''}`.trim() || s.fullName || '—'
 
   const handleApprove = (accountId) => {
-    const studentId = linkChoice[accountId]
-    if (!studentId) return
+    const studentId = linkChoice[accountId] || undefined
     reviewAccount.mutate({ id: accountId, approved: true, studentId })
   }
 
@@ -902,14 +987,14 @@ function StudentAccountsScreen({ d }) {
                     onChange={e => setLinkChoice(prev => ({ ...prev, [acc.accountId]: e.target.value }))}
                     className="border rounded-lg px-3 py-2 text-[12px] outline-none focus:border-[#1D9E75] min-w-[200px]"
                     style={{ borderColor:'#E5E7EB' }}>
-                    <option value="">{a.selectStudent}</option>
+                    <option value="">Criar ficha nova (recomendado)</option>
                     {students.map(s => (
                       <option key={s.id} value={s.id}>{getName(s)} — {s.classLevel ?? s.class ?? '—'}</option>
                     ))}
                   </select>
 
                   <button onClick={() => handleApprove(acc.accountId)}
-                    disabled={!linkChoice[acc.accountId] || reviewAccount.isPending}
+                    disabled={reviewAccount.isPending}
                     className="px-3 py-2 rounded-lg text-white text-[12px] font-bold disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     style={{ background: C.green }}>
                     {reviewAccount.isPending ? a.approving : (<><CheckCircle2 size={13} className="inline -mt-0.5 mr-1" />{a.approve}</>)}
@@ -923,9 +1008,11 @@ function StudentAccountsScreen({ d }) {
                   </button>
                 </div>
               </div>
-              {!linkChoice[acc.accountId] && (
-                <div className="text-[10px] text-[#9CA3AF] mt-2">{a.linkRequired}</div>
-              )}
+              <div className="text-[10px] text-[#9CA3AF] mt-2">
+                {linkChoice[acc.accountId]
+                  ? 'Será vinculado à ficha selecionada.'
+                  : 'Uma nova ficha de aluno será criada automaticamente com os dados informados no cadastro.'}
+              </div>
             </div>
           ))}
         </div>
