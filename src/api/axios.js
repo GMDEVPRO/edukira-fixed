@@ -146,6 +146,12 @@ export const saveGradesBatch = (data) =>
 export const publishGrades = ({ classLevel, period, year }) =>
   api.post(`/v1/grades/publish/${classLevel}`, null, { params: { period, year } }).then(r => r.data)
 
+/* ── Subjects ── */
+export const getSubjects = () =>
+  api.get("/v1/subjects").then(r => r.data)
+export const createSubject = (name) =>
+  api.post("/v1/subjects", { name }).then(r => r.data)
+
 /* ── Payments ── */
 export const getPayments = () =>
   api.get('/v1/payments').then(r => r.data)

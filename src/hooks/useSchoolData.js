@@ -6,7 +6,7 @@ import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/rea
 import {
   getDashboard,
   getStudents, addStudent, updateStudent, deleteStudent,
-  getGradesByClass, saveGradesBatch, publishGrades,
+  getGradesByClass, saveGradesBatch, publishGrades, getSubjects, createSubject,
   getPayments, getOverduePayments, initiatePayment,
   getAttendanceByClass, saveAttendance,
   sendBroadcast, getMessageHistory,
@@ -25,6 +25,7 @@ export const QK = {
   students:       () => ['students'],
   student:        (id) => ['student', id],
   grades:         (cls) => ['grades', cls],
+  subjects:       () => ['subjects'],
   payments:       () => ['payments'],
   overduePayments:() => ['payments', 'overdue'],
   attendance:     (cls, date) => ['attendance', cls, date],
@@ -136,6 +137,25 @@ export function usePublishGrades() {
     mutationFn: publishGrades,
     onSuccess: () => toast.success('Notes publiées — bulletins envoyés'),
     onError:   (err) => toast.error(err.response?.data?.message ?? 'Erreur publication'),
+  })
+}
+
+export function useSubjects() {
+  return useQuery({
+    queryKey: QK.subjects(),
+    queryFn:  getSubjects,
+  })
+}
+
+export function useCreateSubject() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: createSubject,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK.subjects() })
+      toast.success("Matière ajoutée")
+    },
+    onError: (err) => toast.error(err.response?.data?.message ?? "Erreur ajout matière"),
   })
 }
 

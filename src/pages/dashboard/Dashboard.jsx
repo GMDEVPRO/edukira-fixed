@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import { useLang } from '../../hooks/useLang'
-import { useDashboard, useStudents, usePayments, useGradesForClasses, useCountryConfig, useGrades, useSaveGrades, usePublishGrades, usePendingStudentAccounts, useReviewStudentAccount, useAddStudent } from '../../hooks/useSchoolData'
+import { useDashboard, useStudents, usePayments, useGradesForClasses, useCountryConfig, useGrades, useSaveGrades, usePublishGrades, usePendingStudentAccounts, useReviewStudentAccount, useAddStudent, useSubjects, useCreateSubject } from '../../hooks/useSchoolData'
 import { ErrorBoundary } from '../../components/error/ErrorBoundary'
 import ApiErrorFallback from '../../components/error/ApiErrorFallback'
 import { tokens } from '../../styles/tokens'
@@ -734,7 +734,16 @@ function GradesScreen({ d }) {
   const [period, setPeriod]           = useState('')
   const [subjectName, setSubjectName] = useState('')
   const [coefficient, setCoefficient] = useState(1)
+
+  // ── Matérias cadastradas pela escola (GET/POST /v1/subjects, via React Query) ──
+  const { data: subjectsRaw } = useSubjects()
+  const registeredSubjects = toArray(subjectsRaw)
+  const createSubject = useCreateSubject()
+  const [showAddSubject, setShowAddSubject] = useState(false)
+  const [newSubjectName, setNewSubjectName] = useState('')
+
   const [edits, setEdits]             = useState({}) // { studentId: { grade1, grade2 } }
+  const [hasSaved, setHasSaved] = useState(false) // true só depois de um Salvar bem-sucedido nesta turma/bimestre
 
   // Ao trocar de turma/bimestre, descarta edições locais não salvas — usando o padrão
   // "ajustar estado durante o render" (evita useEffect + setState, que causa re-render em cascata)
@@ -743,6 +752,7 @@ function GradesScreen({ d }) {
   if (currentKey !== resetKey) {
     setResetKey(currentKey)
     setEdits({})
+    setHasSaved(false)
   }
 
   const classStudents = useMemo(
@@ -819,7 +829,7 @@ function GradesScreen({ d }) {
       year: YEAR,
       coefficient: parseFloat(coefficient) || 1,
       grades: gradesPayload,
-    })
+    }, { onSuccess: () => setHasSaved(true) })
   }
 
   const handlePublish = () => {
@@ -852,8 +862,32 @@ function GradesScreen({ d }) {
         </div>
         <div>
           <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-1">{g.subjectLabel}</label>
-          <input value={subjectName} onChange={e => setSubjectName(e.target.value)} placeholder={g.subjectPh}
-            className="w-full border rounded-lg px-3 py-2 text-[12px] outline-none focus:border-[#1D9E75]" style={{ borderColor:'#E5E7EB' }} />
+          <select
+            value={subjectName}
+            onChange={e => {
+              if (e.target.value === '__add_new__') { setShowAddSubject(true); return }
+              setSubjectName(e.target.value)
+            }}
+            className="w-full border rounded-lg px-3 py-2 text-[12px] outline-none focus:border-[#1D9E75]" style={{ borderColor:'#E5E7EB' }}>
+            <option value="">{g.subjectPh}</option>
+            {registeredSubjects.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+            <option value="__add_new__">+ Nouvelle matière</option>
+          </select>
+          {showAddSubject && (
+            <div className="flex gap-2 mt-2">
+              <input autoFocus value={newSubjectName} onChange={e => setNewSubjectName(e.target.value)}
+                placeholder="Nom de la matière"
+                className="flex-1 border rounded-lg px-3 py-2 text-[12px] outline-none focus:border-[#1D9E75]" style={{ borderColor:'#E5E7EB' }} />
+              <button type="button"
+                disabled={!newSubjectName.trim() || createSubject.isPending}
+                onClick={() => createSubject.mutate(newSubjectName.trim(), {
+                  onSuccess: (created) => { setSubjectName(created.name); setNewSubjectName(''); setShowAddSubject(false) }
+                })}
+                className="px-3 py-2 rounded-lg text-white text-[12px] font-bold disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: C.green }}>
+                +
+              </button>
+            </div>
+          )}
         </div>
         <div>
           <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-1">{g.coefficientLabel}</label>
@@ -913,7 +947,7 @@ function GradesScreen({ d }) {
               style={{ background: C.green }}>
               {saveGrades.isPending ? g.saving : (<><Save size={13} className="inline -mt-0.5 mr-1.5" />{g.save}</>)}
             </button>
-            <button onClick={handlePublish} disabled={publishGrades.isPending}
+            <button onClick={handlePublish} disabled={publishGrades.isPending || !canSave || !hasSaved}
               className="flex-1 px-4 py-2.5 rounded-lg text-[12px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ borderColor: C.navy, color: C.navy, background:'white' }}>
               {publishGrades.isPending ? g.publishing : (<><Send size={13} className="inline -mt-0.5 mr-1.5" />{g.publish}</>)}
