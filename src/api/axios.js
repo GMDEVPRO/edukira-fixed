@@ -1,4 +1,4 @@
-﻿import axios from 'axios'
+import axios from 'axios'
 import useAuthStore from '../store/authStore'
 
 const BASE = '/api'
@@ -38,20 +38,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
-
-    // 401 em endpoints de login/registro = credenciais inválidas, não sessão
-    // expirada. Não tenta renovar token nem redireciona — deixa o formulário
-    // mostrar o erro normalmente (ex: "Documento ou password incorretos").
-    const AUTH_ENDPOINTS = [
-      '/v1/auth/login',
-      '/v1/auth/refresh',
-      '/v1/student/auth/login',
-      '/v1/student/auth/register',
-      '/v1/register',
-    ]
-    const isAuthEndpoint = AUTH_ENDPOINTS.some(p => originalRequest?.url?.includes(p))
-
-    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
@@ -91,14 +78,14 @@ api.interceptors.response.use(
 )
 
 /* ── Auth ── */
-export const loginAdmin    = ({ email, password, schoolCode }) =>
-  api.post('/v1/auth/login', { email, password, schoolCode }).then(r => r.data)
+export const loginAdmin    = ({ email, password, schoolId }) =>
+  api.post('/v1/auth/login', { email, password, schoolId }).then(r => r.data)
 export const refreshToken  = (token) =>
   api.post('/v1/auth/refresh', null, { params: { refreshToken: token } }).then(r => r.data)
 export const logoutApi     = (token) =>
   api.post('/v1/auth/logout', null, { params: { refreshToken: token } }).then(r => r.data)
-export const loginStudent  = ({ documentNumber, password, schoolCode }) =>
-  api.post('/v1/student/auth/login', { documentNumber, password, schoolCode }).then(r => r.data)
+export const loginStudent  = ({ email, password, schoolId }) =>
+  api.post('/v1/student/auth/login', { email, password, schoolId }).then(r => r.data)
 
 /* ── Register ── */
 export const registerSchool = (data) =>
@@ -113,10 +100,6 @@ export const getCountries = () =>
   api.get('/v1/countries').then(r => r.data)
 export const getCountryConfig = (code) =>
   api.get(`/v1/countries/${code}`).then(r => r.data)
-
-/* ── Schools (busca pública para autocomplete no cadastro de aluno) ── */
-export const searchSchools = (q) =>
-  api.get('/v1/schools/search', { params: { q } }).then(r => r.data?.data ?? [])
 
 /* ── Student Accounts (aprovação de contas criadas por alunos/tutores) ── */
 export const getPendingStudentAccounts = (page = 0, size = 20) =>
@@ -145,12 +128,14 @@ export const saveGradesBatch = (data) =>
   api.post('/v1/grades/batch', data).then(r => r.data)
 export const publishGrades = ({ classLevel, period, year }) =>
   api.post(`/v1/grades/publish/${classLevel}`, null, { params: { period, year } }).then(r => r.data)
+export const getStudentReport = (id, year) =>
+  api.get(`/v1/grades/student/${id}/report`, { params: { year } }).then(r => r.data)
 
 /* ── Subjects ── */
 export const getSubjects = () =>
-  api.get("/v1/subjects").then(r => r.data)
+  api.get('/v1/subjects').then(r => r.data)
 export const createSubject = (name) =>
-  api.post("/v1/subjects", { name }).then(r => r.data)
+  api.post('/v1/subjects', { name }).then(r => r.data)
 
 /* ── Payments ── */
 export const getPayments = () =>
@@ -159,6 +144,8 @@ export const getOverduePayments = () =>
   api.get('/v1/payments/overdue').then(r => r.data)
 export const initiatePayment = (data) =>
   api.post('/v1/payments/initiate', data).then(r => r.data)
+export const getStudentPaymentsAdmin = (id) =>
+  api.get(`/v1/payments/student/${id}`).then(r => r.data)
 
 /* ── Attendance ── */
 export const getAttendanceByClass = (classLevel, date) =>

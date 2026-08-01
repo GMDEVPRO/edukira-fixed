@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import {
   AreaChart, Area, BarChart, Bar,
   PieChart, Pie, Cell,
@@ -625,16 +625,16 @@ function StudentsScreen({ d }) {
               ) : filtered.map((s, i) => (
                 <tr key={s.id ?? i} className="hover:bg-[#F8FAF9] transition-colors">
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
+                    <Link to={`/students/${s.id}`} className="flex items-center gap-2 no-underline group">
                       <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
                            style={{ background: C.navy }}>
                         {getName(s).split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-semibold text-[#111827]">{getName(s)}</div>
+                        <div className="font-semibold text-[#111827] group-hover:underline">{getName(s)}</div>
                         <div className="text-[10px] text-[#9CA3AF]">{s.gender ?? ''}</div>
                       </div>
-                    </div>
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-[#374151]">{s.classLevel ?? s.class ?? '—'}</td>
                   <td className="px-4 py-3 font-mono text-[10px] bg-[#F4F7F5] text-[#374151]">{s.documentNumber ?? '—'}</td>
@@ -743,7 +743,6 @@ function GradesScreen({ d }) {
   const [newSubjectName, setNewSubjectName] = useState('')
 
   const [edits, setEdits]             = useState({}) // { studentId: { grade1, grade2 } }
-  const [hasSaved, setHasSaved] = useState(false) // true só depois de um Salvar bem-sucedido nesta turma/bimestre
 
   // Ao trocar de turma/bimestre, descarta edições locais não salvas — usando o padrão
   // "ajustar estado durante o render" (evita useEffect + setState, que causa re-render em cascata)
@@ -752,7 +751,6 @@ function GradesScreen({ d }) {
   if (currentKey !== resetKey) {
     setResetKey(currentKey)
     setEdits({})
-    setHasSaved(false)
   }
 
   const classStudents = useMemo(
@@ -829,7 +827,7 @@ function GradesScreen({ d }) {
       year: YEAR,
       coefficient: parseFloat(coefficient) || 1,
       grades: gradesPayload,
-    }, { onSuccess: () => setHasSaved(true) })
+    })
   }
 
   const handlePublish = () => {
@@ -947,7 +945,7 @@ function GradesScreen({ d }) {
               style={{ background: C.green }}>
               {saveGrades.isPending ? g.saving : (<><Save size={13} className="inline -mt-0.5 mr-1.5" />{g.save}</>)}
             </button>
-            <button onClick={handlePublish} disabled={publishGrades.isPending || !canSave || !hasSaved}
+            <button onClick={handlePublish} disabled={publishGrades.isPending}
               className="flex-1 px-4 py-2.5 rounded-lg text-[12px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ borderColor: C.navy, color: C.navy, background:'white' }}>
               {publishGrades.isPending ? g.publishing : (<><Send size={13} className="inline -mt-0.5 mr-1.5" />{g.publish}</>)}
@@ -1067,7 +1065,8 @@ function PlaceholderScreen({ title, sub }) {
 
 /* ════════════════════ MAIN DASHBOARD ════════════════════ */
 export default function Dashboard() {
-  const [active, setActive] = useState('dash')
+  const location = useLocation()
+  const [active, setActive] = useState(location.state?.tab ?? 'dash')
   const { school, user, logout } = useAuthStore()
   const { t, lang, setLang, isRTL } = useLang()
   const d = t.dashboard
