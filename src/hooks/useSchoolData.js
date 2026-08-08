@@ -8,6 +8,7 @@ import {
   getStudents, addStudent, updateStudent, deleteStudent,
   getGradesByClass, saveGradesBatch, publishGrades, getSubjects, createSubject, getStudentReport,
   getPayments, getOverduePayments, initiatePayment, getStudentPaymentsAdmin,
+  getTeachers, createTeacher, deleteTeacher,
   getAttendanceByClass, saveAttendance,
   sendBroadcast, getMessageHistory,
   getMySchoolRanking, getNationalRanking,
@@ -26,6 +27,7 @@ export const QK = {
   student:        (id) => ['student', id],
   grades:         (cls) => ['grades', cls],
   subjects:       () => ['subjects'],
+  teachers:       () => ['teachers'],
   studentReport:  (id, year) => ['studentReport', id, year ?? 'default'],
   payments:       () => ['payments'],
   overduePayments:() => ['payments', 'overdue'],
@@ -209,6 +211,38 @@ export function useStudentPaymentsAdmin(id) {
     queryKey: QK.studentPaymentsAdmin(id),
     queryFn:  () => getStudentPaymentsAdmin(id),
     enabled:  !!id,
+  })
+}
+
+/* ════════ TEACHERS ════════ */
+export function useTeachers() {
+  return useQuery({
+    queryKey: QK.teachers(),
+    queryFn:  getTeachers,
+  })
+}
+
+export function useCreateTeacher() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: createTeacher,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK.teachers() })
+      toast.success('Professeur ajouté ✅')
+    },
+    onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur ajout professeur'),
+  })
+}
+
+export function useDeleteTeacher() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: deleteTeacher,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK.teachers() })
+      toast.success('Professeur supprimé')
+    },
+    onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur suppression professeur'),
   })
 }
 

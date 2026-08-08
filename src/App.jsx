@@ -11,6 +11,7 @@ const Login               = lazy(() => import('./pages/auth/Login'))
 const Dashboard           = lazy(() => import('./pages/dashboard/Dashboard'))
 const StudentPortal       = lazy(() => import('./pages/student/StudentPortal'))
 const StudentDetail       = lazy(() => import('./pages/dashboard/StudentDetail'))
+const TeacherDetail       = lazy(() => import('./pages/teachers/TeacherDetail'))
 const NotFound            = lazy(() => import('./pages/NotFound'))
 
 function PrivateRoute({ children, roles }) {
@@ -50,7 +51,12 @@ export default function App() {
             }/>
             <Route path="/students/:id" element={
               <PrivateRoute roles={['SCHOOL_ADMIN','TEACHER','ADMIN']}>
-                <ErrorBoundary section="Ficha Aluno"><StudentDetail /></ErrorBoundary>
+                <ErrorBoundary section="Ficha do Aluno"><StudentDetail /></ErrorBoundary>
+              </PrivateRoute>
+            }/>
+            <Route path="/teachers/:id" element={
+              <PrivateRoute roles={['SCHOOL_ADMIN','ADMIN']}>
+                <ErrorBoundary section="Ficha do Professor"><TeacherDetail /></ErrorBoundary>
               </PrivateRoute>
             }/>
             <Route path="/student/portal" element={

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
   AreaChart, Area, BarChart, Bar,
   PieChart, Pie, Cell,
@@ -9,11 +9,11 @@ import {
 import {
   LayoutDashboard, GraduationCap, Link2, PenLine, CreditCard, CheckCircle2,
   MessageCircle, Trophy, ShoppingBag, Banknote, AlertTriangle, Bell, Pin,
-  TrendingUp, PieChart as PieChartIcon, BarChart3, Activity, Zap, Save, Send, X, Wrench, Plus,
+  TrendingUp, PieChart as PieChartIcon, BarChart3, Activity, Zap, Save, Send, X, Wrench, Plus, Users,
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import { useLang } from '../../hooks/useLang'
-import { useDashboard, useStudents, usePayments, useGradesForClasses, useCountryConfig, useGrades, useSaveGrades, usePublishGrades, usePendingStudentAccounts, useReviewStudentAccount, useAddStudent, useSubjects, useCreateSubject } from '../../hooks/useSchoolData'
+import { useDashboard, useStudents, usePayments, useGradesForClasses, useCountryConfig, useGrades, useSaveGrades, usePublishGrades, usePendingStudentAccounts, useReviewStudentAccount, useAddStudent, useSubjects, useCreateSubject, useTeachers, useCreateTeacher, useDeleteTeacher } from '../../hooks/useSchoolData'
 import { ErrorBoundary } from '../../components/error/ErrorBoundary'
 import ApiErrorFallback from '../../components/error/ApiErrorFallback'
 import { tokens } from '../../styles/tokens'
@@ -40,6 +40,7 @@ const DASH_LANGS = ['fr', 'en', 'ar'] // idiomas disponíveis no seletor do dash
 const NAV_ITEMS = [
   { id:'dash',        ico: LayoutDashboard },
   { id:'students',    ico: GraduationCap },
+  { id:'teachers',    ico: Users },
   { id:'accounts',    ico: Link2 },
   { id:'grades',      ico: PenLine },
   { id:'payments',    ico: CreditCard },
@@ -184,6 +185,7 @@ function buildGradesByClass(grades) {
 
 /* ════════════════════ DASHBOARD SCREEN ════════════════════ */
 function DashScreen({ d, currency }) {
+  const { lang } = useLang()
   const { school } = useAuthStore()
   const schoolId = school?.id ?? school?.schoolId
   const { data: dash, isLoading: dashLoading, error: dashError, refetch: refetchDash } = useDashboard(schoolId)
@@ -274,17 +276,32 @@ function DashScreen({ d, currency }) {
     },
   ]
 
-  /* Map recentActivities[].{ type, description, time } to display format */
-  const recentActivity = (dash?.recentActivities ?? []).map(a => ({
-    icon:   a.type === 'PAYMENT'    ? CreditCard
-          : a.type === 'ENROLLMENT' ? GraduationCap
-          : a.type === 'GRADE'      ? PenLine
-          : a.type === 'ATTENDANCE' ? CheckCircle2
-          : Pin,
-    name:   a.description ?? '',
-    action: '',
-    time:   a.time ?? '',
-  }))
+  /* Map recentActivities[].{ type, studentName, subjectName, amount, currency, timestamp }
+     to display format — mensagem montada via tradução (d.activity.msgX), tempo relativo
+     calculado no cliente com Intl.RelativeTimeFormat (respeita o idioma ativo). */
+  const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' })
+  const formatRelativeTime = (isoTimestamp) => {
+    if (!isoTimestamp) return ''
+    const diffMs = new Date(isoTimestamp).getTime() - Date.now()
+    const diffMin = Math.round(diffMs / 60000)
+    if (Math.abs(diffMin) < 60) return rtf.format(diffMin, 'minute')
+    const diffHour = Math.round(diffMin / 60)
+    if (Math.abs(diffHour) < 24) return rtf.format(diffHour, 'hour')
+    return rtf.format(Math.round(diffHour / 24), 'day')
+  }
+
+  const recentActivity = (dash?.recentActivities ?? []).map(a => {
+    const icon = a.type === 'PAYMENT' ? CreditCard
+               : a.type === 'STUDENT' ? GraduationCap
+               : a.type === 'GRADE'   ? PenLine
+               : a.type === 'ATTENDANCE' ? CheckCircle2
+               : Pin
+    const message = a.type === 'PAYMENT' ? d.activity.msgPayment(a.studentName ?? '', Number(a.amount ?? 0).toLocaleString(), a.currency ?? '')
+                   : a.type === 'STUDENT' ? d.activity.msgStudent(a.studentName ?? '')
+                   : a.type === 'GRADE'   ? d.activity.msgGrade(a.studentName ?? '', a.subjectName ?? '')
+                   : a.description ?? ''
+    return { icon, name: message, action: '', time: formatRelativeTime(a.timestamp), studentId: a.studentId ?? null }
+  })
 
   const quickActionsList = [
     { ico: GraduationCap, t:d.quickActions.addStudent,  s:d.quickActions.addStudentSub,  path:'/student' },
@@ -447,19 +464,25 @@ function DashScreen({ d, currency }) {
             <div className="divide-y" style={{ borderColor: C.border }}>
               {recentActivity.slice(0,5).map((a, i) => {
                 const AIcon = a.icon ?? Pin
+                const Row = a.studentId ? Link : 'div'
+                const rowProps = a.studentId
+                  ? { to: `/students/${a.studentId}`, className: 'flex items-start gap-3 py-2.5 no-underline hover:bg-[#F8FAF9] -mx-2 px-2 rounded-lg transition-colors' }
+                  : { className: 'flex items-start gap-3 py-2.5' }
                 return (
-                <div key={i} className="flex items-start gap-3 py-2.5">
+                <Row key={i} {...rowProps}>
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
                        style={{ background:'#E1F5EE' }}>
                     <AIcon size={15} style={{ color: C.green }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[12px] text-[#374151]">
-                      <strong>{a.name ?? a.title}</strong> · {a.action ?? a.description}
+                      <strong>{a.name ?? a.title}</strong>
                     </div>
-                    <div className="text-[10px] text-[#9CA3AF] mt-0.5">{d.activity.timeAgo(a.time ?? a.timestamp)}</div>
+                    {a.time && (
+                      <div className="text-[10px] text-[#9CA3AF] mt-0.5">{a.time}</div>
+                    )}
                   </div>
-                </div>
+                </Row>
               )})}
             </div>
           )}
@@ -648,6 +671,196 @@ function StudentsScreen({ d }) {
         </div>
       </div>
       {showAdd && <AddStudentModal onClose={() => setShowAdd(false)} />}
+    </div>
+  )
+}
+
+/* ════════════════════ TEACHERS SCREEN ════════════════════ */
+function AddTeacherModal({ d, onClose }) {
+  const t = d.teachersScreen
+  const { data: subjectsRaw } = useSubjects()
+  const subjects = toArray(subjectsRaw)
+  const createTeacher = useCreateTeacher()
+
+  const [f, setF] = useState({ firstName:'', lastName:'', email:'', password:'', documentNumber:'', phone:'' })
+  const [selectedSubjects, setSelectedSubjects] = useState([])
+  const upd = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }))
+
+  const toggleSubject = (id) => {
+    setSelectedSubjects(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  const submit = (e) => {
+    e.preventDefault()
+    if (!f.firstName.trim() || !f.lastName.trim() || !f.email.trim() || !f.password.trim()
+        || !f.documentNumber.trim() || !f.phone.trim()) return
+    if (selectedSubjects.length === 0) return
+    createTeacher.mutate(
+      { ...f, subjectIds: selectedSubjects },
+      { onSuccess: onClose }
+    )
+  }
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <form onSubmit={submit} className="bg-white rounded-xl w-full max-w-[440px] max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: C.border }}>
+          <div className="font-syne font-bold text-[15px] text-[#111827] flex items-center gap-2">
+            <Users size={16} style={{ color: C.green }} /> {t.modalTitle}
+          </div>
+          <button type="button" onClick={onClose} className="text-[#9CA3AF] hover:text-[#111827]"><X size={18} /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">{t.firstNameLabel} *</label>
+              <input value={f.firstName} onChange={upd('firstName')} required
+                className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">{t.lastNameLabel} *</label>
+              <input value={f.lastName} onChange={upd('lastName')} required
+                className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+            </div>
+          </div>
+          <div>
+            <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">{t.emailLabel} *</label>
+            <input value={f.email} onChange={upd('email')} type="email" required
+              className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+          </div>
+          <div>
+            <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">{t.passwordLabel} *</label>
+            <input value={f.password} onChange={upd('password')} type="password" required minLength={8}
+              className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">{t.documentNumberLabel} *</label>
+              <input value={f.documentNumber} onChange={upd('documentNumber')} required
+                className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">{t.phoneLabel} *</label>
+              <input value={f.phone} onChange={upd('phone')} required
+                className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+            </div>
+          </div>
+          <div>
+            <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-2">{t.subjectsLabel} *</label>
+            <div className="flex flex-wrap gap-2">
+              {subjects.map(s => (
+                <button type="button" key={s.id} onClick={() => toggleSubject(s.id)}
+                  className="px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-colors"
+                  style={selectedSubjects.includes(s.id)
+                    ? { background: C.green, color: '#fff', borderColor: C.green }
+                    : { background: '#fff', color: '#6B7280', borderColor: C.border }}>
+                  {s.name}
+                </button>
+              ))}
+            </div>
+            {selectedSubjects.length === 0 && (
+              <div className="text-[10px] text-[#DC2626] mt-1.5">{t.selectAtLeastOne}</div>
+            )}
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 px-5 py-4 border-t" style={{ borderColor: C.border }}>
+          <button type="button" onClick={onClose}
+            className="px-4 py-2 rounded-lg text-[12px] font-semibold text-[#6B7280] hover:bg-[#F4F7F5]">{t.cancel}</button>
+          <button type="submit" disabled={createTeacher.isPending}
+            className="px-4 py-2 rounded-lg text-white text-[12px] font-bold disabled:opacity-60" style={{ background: C.green }}>
+            {createTeacher.isPending ? t.saving : t.save}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+function TeachersScreen({ d }) {
+  const t = d.teachersScreen
+  const { data: teachersRaw, isLoading } = useTeachers()
+  const teachers = toArray(teachersRaw)
+  const deleteTeacher = useDeleteTeacher()
+  const [showAdd, setShowAdd] = useState(false)
+
+  const getName = (tc) => `${tc.firstName ?? ''} ${tc.lastName ?? ''}`.trim()
+
+  const handleDelete = (tc) => {
+    if (!window.confirm(t.deleteConfirm(getName(tc)))) return
+    deleteTeacher.mutate(tc.id)
+  }
+
+  if (isLoading) return <LoadingSpinner />
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <h2 className="font-syne font-bold text-lg text-[#111827] flex items-center gap-2"><Users size={17} style={{ color: C.green }} />{t.title}</h2>
+        <button onClick={() => setShowAdd(true)}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-[12px] font-bold border-none cursor-pointer hover:opacity-90"
+          style={{ background: C.green }}>
+          <Plus size={14} />{t.add}
+        </button>
+      </div>
+      <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: C.border }}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[12px]">
+            <thead>
+              <tr className="border-b" style={{ borderColor: C.border, background:'#F8FAF9' }}>
+                <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{t.colName}</th>
+                <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{t.colEmail}</th>
+                <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{t.colSubjects}</th>
+                <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{t.colDocument}</th>
+                <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{t.colPhone}</th>
+                <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{t.colStatus}</th>
+                <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y" style={{ borderColor: C.border }}>
+              {teachers.length === 0 ? (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-[#9CA3AF]">{t.noResults}</td></tr>
+              ) : teachers.map((tc, i) => (
+                <tr key={tc.id ?? i} className="hover:bg-[#F8FAF9] transition-colors">
+                  <td className="px-4 py-3">
+                    <Link to={`/teachers/${tc.id}`} className="flex items-center gap-2 no-underline group">
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                           style={{ background: C.navy }}>
+                        {getName(tc).split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
+                      </div>
+                      <div className="font-semibold text-[#111827] group-hover:text-[#1D9E75]">{getName(tc)}</div>
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-[#374151]">{tc.email}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {(tc.subjects ?? []).map(s => (
+                        <span key={s.id} className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background:'#E1F5EE', color: C.green }}>
+                          {s.name}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 font-mono text-[10px] bg-[#F4F7F5] text-[#374151]">{tc.documentNumber ?? '—'}</td>
+                  <td className="px-4 py-3 text-[#374151]">{tc.phone ?? '—'}</td>
+                  <td className="px-4 py-3">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: tc.active ? '#D1FAE5' : '#FEE2E2', color: tc.active ? '#065F46' : '#991B1B' }}>
+                      {t.active}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button onClick={() => handleDelete(tc)} disabled={deleteTeacher.isPending}
+                      className="w-7 h-7 rounded-lg border flex items-center justify-center hover:bg-[#FEF2F2] disabled:opacity-50"
+                      style={{ borderColor: C.border, color: C.red }}>
+                      <X size={13} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {showAdd && <AddTeacherModal d={d} onClose={() => setShowAdd(false)} />}
     </div>
   )
 }
@@ -1065,8 +1278,7 @@ function PlaceholderScreen({ title, sub }) {
 
 /* ════════════════════ MAIN DASHBOARD ════════════════════ */
 export default function Dashboard() {
-  const location = useLocation()
-  const [active, setActive] = useState(location.state?.tab ?? 'dash')
+  const [active, setActive] = useState('dash')
   const { school, user, logout } = useAuthStore()
   const { t, lang, setLang, isRTL } = useLang()
   const d = t.dashboard
@@ -1088,6 +1300,7 @@ export default function Dashboard() {
   const screens = {
     dash:        <DashScreen d={d} currency={currency} />,
     students:    <StudentsScreen d={d} />,
+    teachers:    <TeachersScreen d={d} />,
     accounts:    <StudentAccountsScreen d={d} />,
     payments:    <PaymentsScreen d={d} currency={currency} />,
     grades:      <GradesScreen d={d} />,

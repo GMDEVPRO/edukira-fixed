@@ -181,4 +181,12 @@ export const getEnrollments = () =>
 export const reviewEnrollment = (id, data) =>
   api.put(`/v1/enrollments/${id}/review`, data).then(r => r.data)
 
+/* ── Teachers ── */
+export const getTeachers = () =>
+  api.get('/v1/teachers').then(r => r.data)
+export const createTeacher = (data) =>
+  api.post('/v1/teachers', data).then(r => r.data)
+export const deleteTeacher = (id) =>
+  api.delete(`/v1/teachers/${id}`).then(r => r.data)
+
 export default api
