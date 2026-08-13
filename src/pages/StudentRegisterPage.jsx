@@ -43,7 +43,7 @@ const rules = {
   lastName:         v => v.trim() ? '' : 'Nom / Apelido obrigatório',
   docType:          v => v ? '' : 'Tipo de documento obrigatório',
   docNumber:        v => v.trim().length >= 4 ? '' : 'Nº de documento inválido (min. 4 caracteres)',
-  phone:            v => !v || /^[\d+\s\-]{7,}$/.test(v) ? '' : 'Numéro invalide',
+  phone:            v => v.trim() ? (/^[\d+\s\-]{7,}$/.test(v) ? '' : 'Numéro invalide') : 'Téléphone obligatoire',
   password:         v => v.length >= 8 ? '' : 'Mínimo 8 caracteres',
   tutorFirstName:   v => v.trim() ? '' : 'Prénom du tuteur obligatoire',
   tutorLastName:    v => v.trim() ? '' : 'Nom du tuteur obligatoire',
@@ -286,7 +286,7 @@ function StudentForm() {
             </Select>
           </div>
           <div className="sm:col-span-2">
-            <Label>Téléphone WhatsApp</Label>
+            <Label required>Téléphone WhatsApp</Label>
             <Input value={f.phone} onChange={upd('phone')} error={errs.phone} type="tel" placeholder="+244 900 000 000" />
             <FieldError msg={errs.phone} />
           </div>
@@ -467,6 +467,13 @@ export default function StudentRegisterPage() {
   const [tab, setTab] = useState('student')
   const [mode, setMode] = useState('register')
 
+  // Se um admin logado chegou aqui (ex: "Adicionar aluno" no Dashboard), o botão de
+  // voltar deve levar de volta à aba Alunos do Dashboard, não à landing page pública —
+  // que é o destino correto apenas para o próprio aluno/tutor se auto-cadastrando.
+  const { token } = useAuthStore()
+  const backTo    = token ? { pathname: '/dashboard', state: { tab: 'students' } } : '/'
+  const backLabel = token ? 'Voltar ao Dashboard' : (t?.register?.back ?? 'Accueil')
+
   return (
     <div className="min-h-screen bg-[#F0F4FB] font-dm">
       {/* Header */}
@@ -474,7 +481,7 @@ export default function StudentRegisterPage() {
         <Link to="/" className="font-syne font-bold text-[1.35rem] text-white no-underline">
           edu<span style={{ color:'#1D9E75' }}>kira</span><span style={{ color:'#1D9E75' }}>.</span>
         </Link>
-        <Link to="/" className="text-white/40 hover:text-white text-[.78rem] no-underline transition-colors">← {t?.register?.back ?? 'Accueil'}</Link>
+        <Link to={backTo} className="text-white/40 hover:text-white text-[.78rem] no-underline transition-colors">← {backLabel}</Link>
       </header>
 
       <div className="py-10 px-4">

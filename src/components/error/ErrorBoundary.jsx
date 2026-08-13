@@ -1,5 +1,6 @@
 import { Component, useState, useCallback } from 'react'
 import { AlertTriangle, RotateCcw, RefreshCw } from 'lucide-react'
+import useAuthStore from '../../store/authStore'
 
 /**
  * ErrorBoundary global — captura erros React em qualquer sub-árvore.
@@ -36,6 +37,12 @@ export class ErrorBoundary extends Component {
   render() {
     const { hasError, error, retryCount } = this.state
     const { children, section, minimal, fallback } = this.props
+
+    // Se o usuário está autenticado, o "voltar" deve levar ao Dashboard, não à landing page —
+    // evita a sensação de "desconectado" quando na verdade o token ainda é válido.
+    const isLoggedIn = !!useAuthStore.getState().token
+    const backHref = isLoggedIn ? '/dashboard' : '/'
+    const backLabel = isLoggedIn ? '← Retour au tableau de bord' : "← Retour à l'accueil"
 
     if (!hasError) return children
 
@@ -101,8 +108,8 @@ export class ErrorBoundary extends Component {
                   className="w-full py-3 rounded-xl font-semibold text-[#374151] text-sm hover:bg-[#F4F7F5] border border-[#E2EDE8] transition-all">
                   <RefreshCw size={14} className="inline -mt-0.5 mr-1.5" /> Recharger la page
                 </button>
-                <a href="/" className="w-full py-3 rounded-xl font-semibold text-[#6B7280] text-sm hover:text-[#1D9E75] text-center no-underline transition-all">
-                  ← Retour à l'accueil
+                <a href={backHref} className="w-full py-3 rounded-xl font-semibold text-[#6B7280] text-sm hover:text-[#1D9E75] text-center no-underline transition-all">
+                  {backLabel}
                 </a>
               </div>
             </div>

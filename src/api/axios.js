@@ -129,7 +129,7 @@ export const saveGradesBatch = (data) =>
 export const publishGrades = ({ classLevel, period, year }) =>
   api.post(`/v1/grades/publish/${classLevel}`, null, { params: { period, year } }).then(r => r.data)
 export const getStudentReport = (id, year) =>
-  api.get(`/v1/grades/student/${id}/report`, { params: { year } }).then(r => r.data)
+  api.get(`/v1/grades/student/${id}/report`, { params: { year } }).then(r => r.data.data)
 
 /* ── Subjects ── */
 export const getSubjects = () =>
@@ -149,9 +149,9 @@ export const getStudentPaymentsAdmin = (id) =>
 
 /* ── Attendance ── */
 export const getAttendanceByClass = (classLevel, date) =>
-  api.get(`/v1/attendance/${classLevel}`, { params: { date } }).then(r => r.data)
-export const saveAttendance = (data) =>
-  api.post('/v1/attendance', data).then(r => r.data)
+  api.get(`/v1/attendance/class/${classLevel}`, { params: { date } }).then(r => r.data)
+export const saveAttendance = (classLevel, data) =>
+  api.post(`/v1/attendance/class/${classLevel}`, data).then(r => r.data)
 
 /* ── Messages ── */
 export const sendBroadcast = (data) =>

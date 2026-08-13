@@ -258,7 +258,7 @@ export function useAttendance(classLevel, date) {
 export function useSaveAttendance() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: saveAttendance,
+    mutationFn: ({ classLevel, ...data }) => saveAttendance(classLevel, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['attendance'] })
       toast.success('Présences enregistrées ✅')

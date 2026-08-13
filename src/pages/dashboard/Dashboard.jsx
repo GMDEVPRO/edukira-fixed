@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import {
   AreaChart, Area, BarChart, Bar,
   PieChart, Pie, Cell,
@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import { useLang } from '../../hooks/useLang'
-import { useDashboard, useStudents, usePayments, useGradesForClasses, useCountryConfig, useGrades, useSaveGrades, usePublishGrades, usePendingStudentAccounts, useReviewStudentAccount, useAddStudent, useSubjects, useCreateSubject, useTeachers, useCreateTeacher, useDeleteTeacher } from '../../hooks/useSchoolData'
+import { useDashboard, useStudents, usePayments, useGradesForClasses, useCountryConfig, useGrades, useSaveGrades, usePublishGrades, usePendingStudentAccounts, useReviewStudentAccount, useAddStudent, useSubjects, useCreateSubject, useTeachers, useCreateTeacher, useDeleteTeacher, useAttendance, useSaveAttendance } from '../../hooks/useSchoolData'
 import { ErrorBoundary } from '../../components/error/ErrorBoundary'
 import ApiErrorFallback from '../../components/error/ApiErrorFallback'
 import { tokens } from '../../styles/tokens'
@@ -103,12 +103,13 @@ function LoadingSpinner() {
 function StatusBadge({ s, labels }) {
   const colors = {
     PAID:    { bg:'#D1FAE5', color:'#065F46' },
+    ACTIVE:  { bg:'#D1FAE5', color:'#065F46' },
     PARTIAL: { bg:'#FEF3C7', color:'#92400E' },
     PENDING: { bg:'#FEF3C7', color:'#92400E' },
     OVERDUE: { bg:'#FEE2E2', color:'#991B1B' },
   }
   const labelMap = {
-    PAID: labels?.paid, PARTIAL: labels?.partial, PENDING: labels?.pending, OVERDUE: labels?.overdue,
+    PAID: labels?.paid, ACTIVE: labels?.active, PARTIAL: labels?.partial, PENDING: labels?.pending, OVERDUE: labels?.overdue,
   }
   const c = colors[s] || colors.PENDING
   const label = labelMap[s] ?? labels?.pending ?? s
@@ -184,7 +185,7 @@ function buildGradesByClass(grades) {
 }
 
 /* ════════════════════ DASHBOARD SCREEN ════════════════════ */
-function DashScreen({ d, currency }) {
+function DashScreen({ d, currency, onNavigate }) {
   const { lang } = useLang()
   const { school } = useAuthStore()
   const schoolId = school?.id ?? school?.schoolId
@@ -305,9 +306,9 @@ function DashScreen({ d, currency }) {
 
   const quickActionsList = [
     { ico: GraduationCap, t:d.quickActions.addStudent,  s:d.quickActions.addStudentSub,  path:'/student' },
-    { ico: PenLine,       t:d.quickActions.enterGrades, s:d.quickActions.enterGradesSub, path:'/dashboard' },
-    { ico: CreditCard,    t:d.quickActions.wavePayment, s:d.quickActions.wavePaymentSub, path:'/dashboard' },
-    { ico: MessageCircle, t:d.quickActions.broadcastSms,s:d.quickActions.broadcastSmsSub,path:'/dashboard' },
+    { ico: PenLine,       t:d.quickActions.enterGrades, s:d.quickActions.enterGradesSub, tab:'grades' },
+    { ico: CreditCard,    t:d.quickActions.wavePayment, s:d.quickActions.wavePaymentSub, tab:'payments' },
+    { ico: MessageCircle, t:d.quickActions.broadcastSms,s:d.quickActions.broadcastSmsSub,tab:'messages' },
   ]
 
   return (
@@ -476,11 +477,9 @@ function DashScreen({ d, currency }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[12px] text-[#374151]">
-                      <strong>{a.name ?? a.title}</strong>
+                      <strong>{a.name ?? a.title}</strong> · {a.action ?? a.description}
                     </div>
-                    {a.time && (
-                      <div className="text-[10px] text-[#9CA3AF] mt-0.5">{a.time}</div>
-                    )}
+                    <div className="text-[10px] text-[#9CA3AF] mt-0.5">{a.time}</div>
                   </div>
                 </Row>
               )})}
@@ -491,17 +490,28 @@ function DashScreen({ d, currency }) {
         {/* Quick actions */}
         <CardShell title={d.quickActions.title} icon={Zap}>
           <div className="grid grid-cols-2 gap-3">
-            {quickActionsList.map((q, i) => (
-              <Link key={i} to={q.path}
-                className="flex items-center gap-2.5 p-3 rounded-xl border transition-all hover:border-[#1D9E75] hover:bg-[#E1F5EE] no-underline group"
-                style={{ borderColor:C.border, background:'#F4F7F5' }}>
-                <q.ico size={19} style={{ color: C.green }} className="flex-shrink-0" />
-                <div>
-                  <div className="text-[12px] font-bold text-[#111827] group-hover:text-[#0F6E56]">{q.t}</div>
-                  <div className="text-[10px] text-[#6B7280]">{q.s}</div>
-                </div>
-              </Link>
-            ))}
+            {quickActionsList.map((q, i) => {
+              const content = (
+                <>
+                  <q.ico size={19} style={{ color: C.green }} className="flex-shrink-0" />
+                  <div>
+                    <div className="text-[12px] font-bold text-[#111827] group-hover:text-[#0F6E56]">{q.t}</div>
+                    <div className="text-[10px] text-[#6B7280]">{q.s}</div>
+                  </div>
+                </>
+              )
+              const className = "flex items-center gap-2.5 p-3 rounded-xl border transition-all hover:border-[#1D9E75] hover:bg-[#E1F5EE] no-underline group text-left w-full bg-transparent"
+              const style = { borderColor:C.border, background:'#F4F7F5' }
+              return q.tab ? (
+                <button key={i} type="button" onClick={() => onNavigate?.(q.tab)} className={className} style={style}>
+                  {content}
+                </button>
+              ) : (
+                <Link key={i} to={q.path} className={className} style={style}>
+                  {content}
+                </Link>
+              )
+            })}
           </div>
         </CardShell>
       </div>
@@ -1266,6 +1276,171 @@ function StudentAccountsScreen({ d }) {
   )
 }
 
+/* ════════════════════ ATTENDANCE SCREEN ════════════════════ */
+function AttendanceScreen({ d }) {
+  const a = d.attendanceScreen
+  const today = new Date().toISOString().slice(0, 10)
+
+  const { data: studentsRaw } = useStudents()
+  const students = toArray(studentsRaw)
+
+  const classLevels = useMemo(() => {
+    const set = new Set(students.map(s => s.classLevel ?? s.class).filter(Boolean))
+    return Array.from(set).sort()
+  }, [students])
+
+  const [classLevel, setClassLevel] = useState('')
+  const [date, setDate] = useState(today)
+  const [edits, setEdits] = useState({}) // { studentId: 'PRESENT' | 'ABSENT' }
+
+  const classStudents = useMemo(
+    () => students.filter(s => (s.classLevel ?? s.class) === classLevel),
+    [students, classLevel]
+  )
+
+  const { data: summary, isLoading: attLoading } = useAttendance(classLevel, date)
+  const saveAttendance = useSaveAttendance()
+
+  // Reinicia as marcações locais ao trocar de turma/data — pré-preenche com o que já
+  // foi salvo (via o resumo vindo da API), ou PRESENT por padrão (mesmo default da entidade).
+  const [resetKey, setResetKey] = useState('')
+  const currentKey = `${classLevel}|${date}`
+  if (currentKey !== resetKey) {
+    setResetKey(currentKey)
+    const existing = {}
+    ;(summary?.entries ?? []).forEach(e => { existing[e.studentId] = e.status })
+    setEdits(existing)
+  }
+
+  const getStatus = (studentId) => edits[studentId] ?? 'PRESENT'
+  const setStatus = (studentId, status) => setEdits(prev => ({ ...prev, [studentId]: status }))
+  const markAllPresent = () => {
+    const all = {}
+    classStudents.forEach(s => { all[s.id] = 'PRESENT' })
+    setEdits(all)
+  }
+
+  const counts = useMemo(() => {
+    let present = 0, absent = 0
+    classStudents.forEach(s => (getStatus(s.id) === 'ABSENT' ? absent++ : present++))
+    return { total: classStudents.length, present, absent }
+  }, [classStudents, edits])
+
+  const handleSave = () => {
+    if (!classLevel || !date || classStudents.length === 0) return
+    saveAttendance.mutate({
+      classLevel,
+      date,
+      entries: classStudents.map(s => ({ studentId: s.id, status: getStatus(s.id) })),
+    })
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="font-syne font-bold text-lg text-[#111827]">{a.title}</h2>
+
+      <div className="bg-white rounded-xl border p-4 flex flex-col sm:flex-row gap-3 sm:items-end" style={{ borderColor: C.border }}>
+        <div className="flex-1">
+          <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-1">{a.classLabel}</label>
+          <select value={classLevel} onChange={e => setClassLevel(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-[12px] outline-none focus:border-[#1D9E75]" style={{ borderColor:'#E5E7EB' }}>
+            <option value="">{a.selectClass}</option>
+            {classLevels.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div className="flex-1">
+          <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-1">{a.dateLabel}</label>
+          <input type="date" value={date} onChange={e => setDate(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-[12px] outline-none focus:border-[#1D9E75]" style={{ borderColor:'#E5E7EB' }} />
+        </div>
+        <button type="button" onClick={markAllPresent} disabled={!classLevel || classStudents.length === 0}
+          className="px-4 py-2 rounded-lg text-[12px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ borderColor: C.border, color:'#374151', background:'white' }}>
+          {a.markAllPresent}
+        </button>
+      </div>
+
+      {!classLevel || !date ? (
+        <div className="bg-white rounded-xl border p-8 text-center text-[#9CA3AF] text-sm" style={{ borderColor: C.border }}>
+          {a.noClassOrDate}
+        </div>
+      ) : attLoading ? (
+        <LoadingSpinner />
+      ) : classStudents.length === 0 ? (
+        <div className="bg-white rounded-xl border p-8 text-center text-[#9CA3AF] text-sm" style={{ borderColor: C.border }}>
+          {a.noStudents}
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-[#F4F7F5] rounded-xl p-3">
+              <div className="text-[20px] font-syne font-bold text-[#111827]">{counts.total}</div>
+              <div className="text-[11px] text-[#6B7280]">{a.totalStudents}</div>
+            </div>
+            <div className="bg-[#E1F5EE] rounded-xl p-3">
+              <div className="text-[20px] font-syne font-bold" style={{ color: C.green }}>{counts.present}</div>
+              <div className="text-[11px]" style={{ color: C.green }}>{a.totalPresent}</div>
+            </div>
+            <div className="bg-[#FEE2E2] rounded-xl p-3">
+              <div className="text-[20px] font-syne font-bold text-[#991B1B]">{counts.absent}</div>
+              <div className="text-[11px] text-[#991B1B]">{a.totalAbsent}</div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: C.border }}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[12px]">
+                <thead>
+                  <tr className="border-b" style={{ borderColor: C.border, background:'#F8FAF9' }}>
+                    <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{a.colStudent}</th>
+                    <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{a.colStatus}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y" style={{ borderColor: C.border }}>
+                  {classStudents.map(s => {
+                    const status = getStatus(s.id)
+                    const name = `${s.firstName ?? ''} ${s.lastName ?? ''}`.trim() || s.fullName || '—'
+                    return (
+                      <tr key={s.id} className="hover:bg-[#F8FAF9] transition-colors">
+                        <td className="px-4 py-2.5 font-semibold text-[#111827]">{name}</td>
+                        <td className="px-4 py-2.5">
+                          <div className="inline-flex border rounded-lg overflow-hidden" style={{ borderColor:'#E5E7EB' }}>
+                            <button type="button" onClick={() => setStatus(s.id, 'PRESENT')}
+                              className="px-3 py-1.5 text-[11px] font-semibold transition-colors"
+                              style={status === 'PRESENT'
+                                ? { background: C.green, color:'white' }
+                                : { background:'white', color:'#6B7280' }}>
+                              {a.present}
+                            </button>
+                            <button type="button" onClick={() => setStatus(s.id, 'ABSENT')}
+                              className="px-3 py-1.5 text-[11px] font-semibold border-l transition-colors"
+                              style={status === 'ABSENT'
+                                ? { background:'#DC2626', color:'white', borderColor:'#E5E7EB' }
+                                : { background:'white', color:'#6B7280', borderColor:'#E5E7EB' }}>
+                              {a.absent}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex justify-end p-4 border-t" style={{ borderColor: C.border }}>
+              <button onClick={handleSave} disabled={saveAttendance.isPending}
+                className="px-5 py-2.5 rounded-lg text-white text-[12px] font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: C.green }}>
+                {saveAttendance.isPending ? a.saving : a.save}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function PlaceholderScreen({ title, sub }) {
   return (
     <div className="flex flex-col items-center justify-center h-64 text-[#6B7280]">
@@ -1278,7 +1453,8 @@ function PlaceholderScreen({ title, sub }) {
 
 /* ════════════════════ MAIN DASHBOARD ════════════════════ */
 export default function Dashboard() {
-  const [active, setActive] = useState('dash')
+  const location = useLocation()
+  const [active, setActive] = useState(location.state?.tab ?? 'dash')
   const { school, user, logout } = useAuthStore()
   const { t, lang, setLang, isRTL } = useLang()
   const d = t.dashboard
@@ -1298,13 +1474,13 @@ export default function Dashboard() {
   }))
 
   const screens = {
-    dash:        <DashScreen d={d} currency={currency} />,
+    dash:        <DashScreen d={d} currency={currency} onNavigate={setActive} />,
     students:    <StudentsScreen d={d} />,
     teachers:    <TeachersScreen d={d} />,
     accounts:    <StudentAccountsScreen d={d} />,
     payments:    <PaymentsScreen d={d} currency={currency} />,
     grades:      <GradesScreen d={d} />,
-    attendance:  <PlaceholderScreen title={d.placeholderScreens.attendance} sub={d.placeholder.sub} />,
+    attendance:  <AttendanceScreen d={d} />,
     messages:    <PlaceholderScreen title={d.placeholderScreens.messages} sub={d.placeholder.sub} />,
     ranking:     <PlaceholderScreen title={d.placeholderScreens.ranking} sub={d.placeholder.sub} />,
     marketplace: <PlaceholderScreen title={d.placeholderScreens.marketplace} sub={d.placeholder.sub} />,
