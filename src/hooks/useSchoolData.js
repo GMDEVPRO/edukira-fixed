@@ -10,7 +10,7 @@ import {
   getPayments, getOverduePayments, initiatePayment, getStudentPaymentsAdmin,
   getTeachers, createTeacher, deleteTeacher,
   getAttendanceByClass, saveAttendance,
-  sendBroadcast, getMessageHistory,
+  sendBroadcast, getMessageHistory, retryFailedNotifications,
   getMySchoolRanking, getNationalRanking,
   getStudentPortalMe, getStudentGrades,
   getStudentPayments, getStudentDocuments,
@@ -258,6 +258,7 @@ export function useAttendance(classLevel, date) {
 export function useSaveAttendance() {
   const qc = useQueryClient()
   return useMutation({
+    /* payload: { classLevel, date, subject?, entries: [{ studentId, status, observation? }] } */
     mutationFn: ({ classLevel, ...data }) => saveAttendance(classLevel, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['attendance'] })
@@ -269,10 +270,14 @@ export function useSaveAttendance() {
 
 /* ════════ MESSAGES ════════ */
 export function useSendBroadcast() {
+  const qc = useQueryClient()
   return useMutation({
     mutationFn: sendBroadcast,
-    onSuccess: () => toast.success('Message diffusé ✅'),
-    onError:   (err) => toast.error(err.response?.data?.message ?? 'Erreur envoi message'),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK.messages() })
+      toast.success('Message diffusé ✅')
+    },
+    onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur envoi message'),
   })
 }
 
@@ -281,6 +286,18 @@ export function useMessageHistory() {
     queryKey: QK.messages(),
     queryFn:  getMessageHistory,
     staleTime: 60_000,
+  })
+}
+
+export function useRetryFailedNotifications() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: retryFailedNotifications,
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: QK.messages() })
+      toast.success(`Reenvio concluído — ${data?.data?.reenviadas ?? 0} mensagem(ns) reenviada(s) ✅`)
+    },
+    onError: (err) => toast.error(err.response?.data?.message ?? 'Erreur reenvoi'),
   })
 }
 
