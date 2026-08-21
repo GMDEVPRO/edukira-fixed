@@ -147,7 +147,10 @@ export const initiatePayment = (data) =>
 export const getStudentPaymentsAdmin = (id) =>
   api.get(`/v1/payments/student/${id}`).then(r => r.data)
 
-/* ── Attendance ── */
+/* ── Attendance ──
+   Controller real: POST/GET /v1/attendance/class/{classLevel}.
+   POST espera AttendanceRequest: { date, subject?, entries: [{ studentId, status, observation? }] }.
+   status é um AttendanceStatus (PRESENT | ABSENT | LATE | EXCUSED). */
 export const getAttendanceByClass = (classLevel, date) =>
   api.get(`/v1/attendance/class/${classLevel}`, { params: { date } }).then(r => r.data)
 export const saveAttendance = (classLevel, data) =>
@@ -158,6 +161,8 @@ export const sendBroadcast = (data) =>
   api.post('/v1/notifications/broadcast', data).then(r => r.data)
 export const getMessageHistory = () =>
   api.get('/v1/notifications/history').then(r => r.data)
+export const retryFailedNotifications = () =>
+  api.post('/v1/notifications/retry').then(r => r.data)
 
 /* ── Rankings ── */
 export const getMySchoolRanking = () =>
