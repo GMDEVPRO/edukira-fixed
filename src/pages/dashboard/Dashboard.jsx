@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import { useLang } from '../../hooks/useLang'
-import { useDashboard, useStudents, usePayments, useGradesForClasses, useCountryConfig, useGrades, useSaveGrades, usePublishGrades, usePendingStudentAccounts, useReviewStudentAccount, useAddStudent, useSubjects, useCreateSubject, useTeachers, useCreateTeacher, useDeleteTeacher, useAttendance, useSaveAttendance } from '../../hooks/useSchoolData'
+import { useDashboard, useStudents, usePayments, useGradesForClasses, useCountryConfig, useGrades, useSaveGrades, usePublishGrades, usePendingStudentAccounts, useReviewStudentAccount, useAddStudent, useSubjects, useCreateSubject, useTeachers, useCreateTeacher, useDeleteTeacher, useAttendance, useSaveAttendance, useSendBroadcast, useMessageHistory, useRetryFailedNotifications } from '../../hooks/useSchoolData'
 import { ErrorBoundary } from '../../components/error/ErrorBoundary'
 import ApiErrorFallback from '../../components/error/ApiErrorFallback'
 import { tokens } from '../../styles/tokens'
@@ -528,7 +528,7 @@ const CLASS_LEVELS = [
 function AddStudentModal({ onClose }) {
   const addStudent = useAddStudent()
   const [f, setF] = useState({
-    firstName:'', lastName:'', classLevel:'', documentNumber:'',
+    firstName:'', lastName:'', classLevel:'', documentNumber:'', phone:'',
     guardianName:'', guardianPhone:'', guardianEmail:'', guardianDocumentNumber:'',
   })
   const upd = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }))
@@ -575,6 +575,11 @@ function AddStudentModal({ onClose }) {
           <div>
             <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">Nº de documento do aluno</label>
             <input value={f.documentNumber} onChange={upd('documentNumber')} placeholder="Ex: 1234567890"
+              className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
+          </div>
+          <div>
+            <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide block mb-1">Telefone do aluno (opcional)</label>
+            <input value={f.phone} onChange={upd('phone')} type="tel" placeholder="Ex: +221 77 000 00 00"
               className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#1D9E75]" style={{ borderColor: C.border }} />
           </div>
           <div className="pt-2 border-t" style={{ borderColor: C.border }}>
@@ -1441,6 +1446,214 @@ function AttendanceScreen({ d }) {
   )
 }
 
+/* ════════════════════ MESSAGES SCREEN ════════════════════ */
+function MessagesScreen({ d }) {
+  const m = d.messagesScreen
+
+  const { data: studentsRaw } = useStudents()
+  const students = toArray(studentsRaw)
+
+  const classLevels = useMemo(() => {
+    const set = new Set(students.map(s => s.classLevel ?? s.class).filter(Boolean))
+    return Array.from(set).sort()
+  }, [students])
+
+  const [recipientType, setRecipientType] = useState('ALL') // ALL | CLASS | STUDENT
+  const [classLevel, setClassLevel] = useState('')
+  const [studentId, setStudentId] = useState('')
+  const [sendTo, setSendTo] = useState('GUARDIAN') // GUARDIAN | STUDENT — só relevante quando recipientType === 'STUDENT'
+  const [channel, setChannel] = useState('WHATSAPP') // WHATSAPP | SMS
+  const [message, setMessage] = useState('')
+
+  const sendBroadcast = useSendBroadcast()
+  const { data: historyRaw, isLoading: historyLoading } = useMessageHistory()
+  const history = toArray(historyRaw)
+  const retryFailed = useRetryFailedNotifications()
+
+  const getName = (s) => `${s.firstName ?? ''} ${s.lastName ?? ''}`.trim() || s.fullName || '—'
+
+  // Resolve destinatários (telefone + nome do responsável) a partir da seleção —
+  // feito aqui no frontend porque já temos os alunos carregados, evita o backend
+  // precisar de mais uma consulta por turma/aluno.
+  const selectedStudent = recipientType === 'STUDENT' ? students.find(s => s.id === studentId) : null
+
+  const recipients = useMemo(() => {
+    // Aluno específico + "Aluno" selecionado como destino: manda pro telefone do próprio aluno
+    if (recipientType === 'STUDENT' && sendTo === 'STUDENT') {
+      return selectedStudent?.phone ? [{ phone: selectedStudent.phone, name: getName(selectedStudent) }] : []
+    }
+    let pool = students
+    if (recipientType === 'CLASS') pool = students.filter(s => (s.classLevel ?? s.class) === classLevel)
+    if (recipientType === 'STUDENT') pool = students.filter(s => s.id === studentId)
+    return pool
+      .filter(s => s.guardianPhone)
+      .map(s => ({ phone: s.guardianPhone, name: s.guardianName || getName(s) }))
+  }, [students, recipientType, classLevel, studentId, sendTo, selectedStudent])
+
+  const canSend = message.trim().length > 0 && recipients.length > 0
+    && (recipientType !== 'CLASS' || classLevel) && (recipientType !== 'STUDENT' || studentId)
+
+  const handleSend = () => {
+    if (!canSend) return
+    sendBroadcast.mutate(
+      { channel, message: message.trim(), recipients },
+      { onSuccess: () => setMessage('') }
+    )
+  }
+
+  const statusStyle = {
+    SENT:    { bg:'#D1FAE5', color:'#065F46', label: m.statusSent },
+    FAILED:  { bg:'#FEE2E2', color:'#991B1B', label: m.statusFailed },
+    PENDING: { bg:'#FEF3C7', color:'#92400E', label: m.statusPending },
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="font-syne font-bold text-lg text-[#111827]">{m.title}</h2>
+
+      {/* ── Compose ── */}
+      <div className="bg-white rounded-xl border p-4" style={{ borderColor: C.border }}>
+        <div className="font-syne font-bold text-[13px] text-[#111827] mb-3">{m.newMessage}</div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-1">{m.recipientsLabel}</label>
+            <select value={recipientType} onChange={e => setRecipientType(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-[12px] outline-none focus:border-[#1D9E75]" style={{ borderColor:'#E5E7EB' }}>
+              <option value="ALL">{m.recipientAll}</option>
+              <option value="CLASS">{m.recipientClass}</option>
+              <option value="STUDENT">{m.recipientStudent}</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-1">{m.channelLabel}</label>
+            <div className="inline-flex border rounded-lg overflow-hidden w-full" style={{ borderColor:'#E5E7EB' }}>
+              <button type="button" onClick={() => setChannel('WHATSAPP')}
+                className="flex-1 py-2 text-[12px] font-semibold transition-colors"
+                style={channel === 'WHATSAPP' ? { background: C.green, color:'white' } : { background:'white', color:'#6B7280' }}>
+                WhatsApp
+              </button>
+              <button type="button" onClick={() => setChannel('SMS')}
+                className="flex-1 py-2 text-[12px] font-semibold border-l transition-colors"
+                style={channel === 'SMS' ? { background: C.green, color:'white', borderColor:'#E5E7EB' } : { background:'white', color:'#6B7280', borderColor:'#E5E7EB' }}>
+                SMS
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {recipientType === 'CLASS' && (
+          <div className="mb-3">
+            <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-1">{m.selectClass}</label>
+            <select value={classLevel} onChange={e => setClassLevel(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-[12px] outline-none focus:border-[#1D9E75]" style={{ borderColor:'#E5E7EB' }}>
+              <option value="">{m.selectClass}</option>
+              {classLevels.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+        )}
+
+        {recipientType === 'STUDENT' && (
+          <div className="mb-3 space-y-3">
+            <div>
+              <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-1">{m.selectStudent}</label>
+              <select value={studentId} onChange={e => setStudentId(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-[12px] outline-none focus:border-[#1D9E75]" style={{ borderColor:'#E5E7EB' }}>
+                <option value="">{m.selectStudent}</option>
+                {students.map(s => <option key={s.id} value={s.id}>{getName(s)} — {s.classLevel ?? s.class ?? '—'}</option>)}
+              </select>
+            </div>
+            {selectedStudent?.phone && (
+              <div>
+                <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-1">{m.sendToLabel}</label>
+                <div className="inline-flex border rounded-lg overflow-hidden w-full" style={{ borderColor:'#E5E7EB' }}>
+                  <button type="button" onClick={() => setSendTo('GUARDIAN')}
+                    className="flex-1 py-2 text-[12px] font-semibold transition-colors"
+                    style={sendTo === 'GUARDIAN' ? { background: C.green, color:'white' } : { background:'white', color:'#6B7280' }}>
+                    {m.sendToGuardian}
+                  </button>
+                  <button type="button" onClick={() => setSendTo('STUDENT')}
+                    className="flex-1 py-2 text-[12px] font-semibold border-l transition-colors"
+                    style={sendTo === 'STUDENT' ? { background: C.green, color:'white', borderColor:'#E5E7EB' } : { background:'white', color:'#6B7280', borderColor:'#E5E7EB' }}>
+                    {m.sendToStudent}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <label className="text-[10px] font-bold text-[#6B7280] uppercase block mb-1">{m.messageLabel}</label>
+        <textarea rows={3} value={message} onChange={e => setMessage(e.target.value)} placeholder={m.messagePh}
+          className="w-full border rounded-lg px-3 py-2 text-[12px] outline-none focus:border-[#1D9E75] resize-none" style={{ borderColor:'#E5E7EB' }} />
+
+        <div className="flex items-center justify-between mt-3">
+          <span className="text-[11px] text-[#9CA3AF]">
+            {recipients.length === 0 ? m.noPhone : m.estimatedRecipients(recipients.length)}
+          </span>
+          <button onClick={handleSend} disabled={!canSend || sendBroadcast.isPending}
+            className="px-5 py-2 rounded-lg text-white text-[12px] font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: C.green }}>
+            {sendBroadcast.isPending ? m.sending : m.send}
+          </button>
+        </div>
+      </div>
+
+      {/* ── History ── */}
+      <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: C.border }}>
+        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: C.border }}>
+          <div className="font-syne font-bold text-[13px] text-[#111827]">{m.historyTitle}</div>
+          <button onClick={() => retryFailed.mutate()} disabled={retryFailed.isPending}
+            className="px-3 py-1.5 rounded-lg text-[11px] font-bold border disabled:opacity-50"
+            style={{ borderColor: C.border, color:'#374151', background:'white' }}>
+            {retryFailed.isPending ? m.retrying : m.retryFailed}
+          </button>
+        </div>
+        {historyLoading ? (
+          <LoadingSpinner />
+        ) : history.length === 0 ? (
+          <div className="px-4 py-8 text-center text-[#9CA3AF] text-sm">{m.noHistory}</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[12px]">
+              <thead>
+                <tr className="border-b" style={{ borderColor: C.border, background:'#F8FAF9' }}>
+                  <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{m.colChannel}</th>
+                  <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{m.colMessage}</th>
+                  <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{m.colRecipient}</th>
+                  <th className="px-4 py-3 text-left font-bold text-[#6B7280] text-[10px] uppercase tracking-wide">{m.colStatus}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y" style={{ borderColor: C.border }}>
+                {history.map((n, i) => {
+                  const s = statusStyle[n.status] ?? statusStyle.PENDING
+                  return (
+                    <tr key={n.id ?? i} className="hover:bg-[#F8FAF9]">
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                              style={{ background: n.channel === 'WHATSAPP' ? '#E1F5EE' : '#E8EEF7', color: n.channel === 'WHATSAPP' ? '#0F6E56' : '#0B1E42' }}>
+                          {n.channel === 'WHATSAPP' ? 'WhatsApp' : n.channel}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-[#374151] max-w-[280px] truncate">{n.body}</td>
+                      <td className="px-4 py-3 text-[#6B7280]">{n.recipientName ?? n.recipientPhone ?? '—'}</td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: s.bg, color: s.color }}>
+                          {s.label}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function PlaceholderScreen({ title, sub }) {
   return (
     <div className="flex flex-col items-center justify-center h-64 text-[#6B7280]">
@@ -1481,7 +1694,7 @@ export default function Dashboard() {
     payments:    <PaymentsScreen d={d} currency={currency} />,
     grades:      <GradesScreen d={d} />,
     attendance:  <AttendanceScreen d={d} />,
-    messages:    <PlaceholderScreen title={d.placeholderScreens.messages} sub={d.placeholder.sub} />,
+    messages:    <MessagesScreen d={d} />,
     ranking:     <PlaceholderScreen title={d.placeholderScreens.ranking} sub={d.placeholder.sub} />,
     marketplace: <PlaceholderScreen title={d.placeholderScreens.marketplace} sub={d.placeholder.sub} />,
   }
